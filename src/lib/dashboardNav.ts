@@ -17,7 +17,6 @@ export type DashboardNavItem = {
 
 export const dashboardNav: DashboardNavItem[] = [
   { label: "Upload Paper", href: "/dashboard/upload", icon: UploadFileRoundedIcon },
-  { label: "Recent Papers", href: "/dashboard/recent", icon: HistoryRoundedIcon }, // ✅ NEW
 
   { label: "Library", href: "/dashboard/library", icon: LibraryBooksRoundedIcon },
   { label: "Chat", href: "/dashboard/chat", icon: ChatRoundedIcon },

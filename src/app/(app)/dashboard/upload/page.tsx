@@ -34,28 +34,41 @@ export default function UploadPage() {
   });
 
   return (
-    <Box>
-      <Typography sx={{ fontWeight: 950, fontSize: 22, mb: 0.5 }}>Upload Paper</Typography>
-      <Typography sx={{ color: "text.secondary", mb: 2 }}>
-        Upload a PDF and instantly get summary + glossary.
-      </Typography>
+    <Box
+      sx={{
+        minHeight: "calc(100vh - 120px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+      }}
+    >
+      <Box sx={{ width: "100%", maxWidth: 620 }}>
+        <Typography sx={{ fontWeight: 950, fontSize: 22, mb: 0.5, textAlign: "center" }}>
+          Upload Paper
+        </Typography>
+        <Typography sx={{ color: "text.secondary", mb: 3, textAlign: "center" }}>
+          Upload a PDF and instantly get summary + glossary.
+        </Typography>
 
-      <PaperUploader
-        file={file}
-        error={error}
-        isLoading={upload.isPending}
-        progress={progress}
-        onPick={(f) => {
-          setError(null);
-          setFile(f);
-        }}
-        onClear={() => {
-          setError(null);
-          setProgress(0);
-          setFile(null);
-        }}
-        onUpload={() => upload.mutate()}
-      />
+        <PaperUploader
+          file={file}
+          error={error}
+          isLoading={upload.isPending}
+          progress={progress}
+          onPick={(f) => {
+            setError(null);
+            setFile(f);
+          }}
+          onClear={() => {
+            setError(null);
+            setProgress(0);
+            setFile(null);
+          }}
+          onUpload={() => upload.mutate()}
+        />
+      </Box>
     </Box>
   );
+
 }

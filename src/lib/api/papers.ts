@@ -24,13 +24,46 @@ export async function analyzePaper(file: File, onProgress?: (pct: number) => voi
   const fd = new FormData();
   fd.append("file", file);
 
-  const res = await api.post<AnalyzeResponse>("http://localhost:8001/analyze", fd, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: (evt) => {
-      if (!evt.total) return;
-      onProgress?.(Math.round((evt.loaded * 100) / evt.total));
-    },
-  });
+  let uploadDone = false;
+  let analyzingTimer: ReturnType<typeof setInterval> | null = null;
+  let pct = 0;
 
-  return res.data;
+  const startAnalyzingProgress = () => {
+    // Smoothly creep from 90 → 99 while backend processes
+    pct = Math.max(pct, 90);
+    analyzingTimer = setInterval(() => {
+      pct = Math.min(99, pct + Math.random() * 1.2); // small increments
+      onProgress?.(Math.floor(pct));
+    }, 450);
+  };
+
+  try {
+    const res = await api.post<AnalyzeResponse>("/analyze", fd, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 0, // ✅ no timeout for this request too
+      onUploadProgress: (evt) => {
+        if (!evt.total) return;
+        const next = Math.round((evt.loaded * 100) / evt.total);
+
+        // Map upload 0..100 → 0..90 so we leave room for "analyzing"
+        pct = Math.min(90, Math.round(next * 0.9));
+        onProgress?.(pct);
+
+        if (next >= 100 && !uploadDone) {
+          uploadDone = true;
+          // Start "analyzing..." creep
+          startAnalyzingProgress();
+        }
+      },
+    });
+
+    // Request finished → complete progress
+    if (analyzingTimer) clearInterval(analyzingTimer);
+    onProgress?.(100);
+
+    return res.data;
+  } catch (e) {
+    if (analyzingTimer) clearInterval(analyzingTimer);
+    throw e;
+  }
 }
