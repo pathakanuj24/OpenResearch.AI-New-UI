@@ -1,0 +1,29 @@
+import LibraryBooksRoundedIcon from "@mui/icons-material/LibraryBooksRounded";
+import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
+import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
+import HubRoundedIcon from "@mui/icons-material/HubRounded";
+import TravelExploreRoundedIcon from "@mui/icons-material/TravelExploreRounded";
+import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+
+export type DashboardNavItem = {
+  label: string;
+  href?: string;
+  icon: any;
+  action?: "logout";
+};
+
+export const dashboardNav: DashboardNavItem[] = [
+  { label: "Upload Paper", href: "/dashboard/upload", icon: UploadFileRoundedIcon },
+  { label: "Recent Papers", href: "/dashboard/recent", icon: HistoryRoundedIcon }, // ✅ NEW
+
+  { label: "Library", href: "/dashboard/library", icon: LibraryBooksRoundedIcon },
+  { label: "Chat", href: "/dashboard/chat", icon: ChatRoundedIcon },
+  { label: "Learn", href: "/dashboard/learn", icon: SchoolRoundedIcon },
+  { label: "Knowledge Graph", href: "/dashboard/graph", icon: HubRoundedIcon },
+  { label: "Discover", href: "/dashboard/discover", icon: TravelExploreRoundedIcon },
+  { label: "My Profile", href: "/dashboard/profile", icon: AccountCircleRoundedIcon },
+  { label: "Logout", icon: LogoutRoundedIcon, action: "logout" },
+];
