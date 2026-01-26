@@ -20,7 +20,7 @@ import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 
 const quickActions = [
   {
-    label: "Upload Paper",
+    label: "Upload Research Paper",
     description: "Analyze a new research paper",
     icon: UploadFileRoundedIcon,
     href: "/dashboard/upload",
@@ -276,7 +276,7 @@ export default function DashboardHome() {
             onClick={() => router.push("/dashboard/upload")}
             sx={{ borderRadius: 2.5, textTransform: "none", fontWeight: 600 }}
           >
-            Upload Paper
+            Upload Research Paper
           </Button>
         </Card>
       )}

@@ -170,9 +170,9 @@ export default function HomePage() {
 
         <Testimonials
           items={[
-            { quote: "The glossary + summary saved me hours before my exam. I finally understood the paper without reading it 5 times.", name: "Aman", role: "Masters Student" },
-            { quote: "Chat with paper is the best part — it stays grounded and doesn't hallucinate like other tools.", name: "Riya", role: "Research Intern" },
-            { quote: "Related work suggestions helped me plan what to read next. Saved me days of literature review.", name: "Kabir", role: "PhD Scholar" },
+            { quote: "The glossary + summary saved me hours before my exam. I finally understood the paper without reading it 5 times.", name: "Anuj", role: "AI Engineer" },
+            { quote: "Chat with paper is the best part — it stays grounded and doesn't hallucinate like other tools.", name: "Madhur", role: "Research Intern" },
+            { quote: "Related work suggestions helped me plan what to read next. Saved me days of literature review.", name: "Jaskirat", role: "PhD Scholar" },
           ]}
         />
       </Section>

@@ -45,7 +45,7 @@ export default function UploadPage() {
     >
       <Box sx={{ width: "100%", maxWidth: 620 }}>
         <Typography sx={{ fontWeight: 950, fontSize: 22, mb: 0.5, textAlign: "center" }}>
-          Upload Paper
+          Upload Research Paper
         </Typography>
         <Typography sx={{ color: "text.secondary", mb: 3, textAlign: "center" }}>
           Upload a PDF and instantly get summary + glossary.

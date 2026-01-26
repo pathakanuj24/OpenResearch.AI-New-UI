@@ -58,7 +58,7 @@ export default function LibraryPage() {
             },
           }}
         >
-          Upload Paper
+          Upload Research Paper
         </Button>
       </Stack>
 
