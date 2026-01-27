@@ -30,10 +30,15 @@ import { learningAPI, GraphNode, GraphLink } from "@/lib/api/learning";
 import { useAnalyses } from "@/lib/hooks/useAnalyses";
 
 // D3 simulation node type
-interface D3Node extends d3.SimulationNodeDatum, GraphNode {
+// interface D3Node extends d3.SimulationNodeDatum, GraphNode {
+//   x?: number;
+//   y?: number;
+// }
+
+type D3Node = GraphNode & d3.SimulationNodeDatum & {
   x?: number;
   y?: number;
-}
+};
 
 // D3 simulation link type
 interface D3Link extends d3.SimulationLinkDatum<D3Node> {
@@ -313,7 +318,7 @@ export default function KnowledgeGraphPage() {
         .strength((d) => d.strength * 0.5))
       .force("charge", d3.forceManyBody().strength(-400))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius((d: D3Node) => d.size + 10));
+      .force("collision", d3.forceCollide<D3Node>().radius((d) => d.size + 10));
 
     // Create links
     const link = g.append("g")
