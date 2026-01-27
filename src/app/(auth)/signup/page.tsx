@@ -9,7 +9,6 @@ import {
   IconButton,
   InputAdornment,
   Paper,
-  Stack,
   TextField,
   Typography,
   CircularProgress,
@@ -21,9 +20,32 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import AuthShell from "@/components/auth/AuthShell";
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// at least 8 chars, 1 uppercase, 1 lowercase, 1 number
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+function firebaseFriendlyError(code?: string) {
+  switch (code) {
+    case "auth/email-already-in-use":
+      return "This email is already registered. Try signing in.";
+    case "auth/invalid-email":
+      return "Please enter a valid email.";
+    case "auth/weak-password":
+      return "Password is too weak. Try a stronger one.";
+    case "auth/network-request-failed":
+      return "Network error. Please check your internet.";
+    default:
+      return "Signup failed. Please try again.";
+  }
+}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -31,21 +53,76 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const [touched, setTouched] = useState({
+    fullName: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const fullNameVal = fullName.trim();
+  const emailVal = email.trim();
+
+  const fullNameError =
+    !fullNameVal
+      ? "Full name is required."
+      : fullNameVal.length < 2
+      ? "Full name must be at least 2 characters."
+      : !/^[a-zA-Z\s.'-]+$/.test(fullNameVal)
+      ? "Name can contain only letters and spaces."
+      : "";
+
+  const emailError =
+    !emailVal
+      ? "Email is required."
+      : !emailRegex.test(emailVal)
+      ? "Enter a valid email address."
+      : "";
+
+  const passwordError =
+    !password
+      ? "Password is required."
+      : !strongPasswordRegex.test(password)
+      ? "Use 8+ chars with uppercase, lowercase, and number."
+      : "";
+
+  const confirmPasswordError =
+    !confirmPassword
+      ? "Please confirm your password."
+      : confirmPassword !== password
+      ? "Passwords do not match."
+      : "";
+
+  const isFormValid =
+    !fullNameError && !emailError && !passwordError && !confirmPasswordError;
+
   const onSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setTouched({
+      fullName: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+    });
+
+    if (!isFormValid) return;
+
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // (Optional) Later: send fullName to backend/profile store
+      await createUserWithEmailAndPassword(auth, emailVal, password);
+      // Later: store fullName in Firestore/backend
       router.push("/dashboard/library");
     } catch (err: any) {
-      setError(err?.message || "Signup failed.");
+      setError(firebaseFriendlyError(err?.code) || err?.message);
     } finally {
       setLoading(false);
     }
@@ -58,7 +135,7 @@ export default function SignupPage() {
       await signInWithPopup(auth, new GoogleAuthProvider());
       router.push("/dashboard/library");
     } catch (err: any) {
-      setError(err?.message || "Google signup failed.");
+      setError(firebaseFriendlyError(err?.code) || err?.message);
     } finally {
       setLoading(false);
     }
@@ -119,7 +196,9 @@ export default function SignupPage() {
           </Button>
         </Box>
 
-        <Divider sx={{ my: 3, color: "text.secondary" }}>OR SIGN UP WITH EMAIL</Divider>
+        <Divider sx={{ my: 3, color: "text.secondary" }}>
+          OR SIGN UP WITH EMAIL
+        </Divider>
 
         <Box component="form" onSubmit={onSignup}>
           <Typography sx={{ fontWeight: 700, mb: 1 }}>Full name</Typography>
@@ -128,7 +207,10 @@ export default function SignupPage() {
             placeholder="John Doe"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            onBlur={() => setTouched((t) => ({ ...t, fullName: true }))}
             autoComplete="name"
+            error={touched.fullName && !!fullNameError}
+            helperText={touched.fullName ? fullNameError : " "}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -138,13 +220,16 @@ export default function SignupPage() {
             }}
           />
 
-          <Typography sx={{ fontWeight: 700, mb: 1, mt: 2 }}>Email</Typography>
+          <Typography sx={{ fontWeight: 700, mb: 1, mt: 1 }}>Email</Typography>
           <TextField
             fullWidth
             placeholder="name@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => setTouched((t) => ({ ...t, email: true }))}
             autoComplete="email"
+            error={touched.email && !!emailError}
+            helperText={touched.email ? emailError : " "}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -154,14 +239,17 @@ export default function SignupPage() {
             }}
           />
 
-          <Typography sx={{ fontWeight: 700, mb: 1, mt: 2 }}>Password</Typography>
+          <Typography sx={{ fontWeight: 700, mb: 1, mt: 1 }}>Password</Typography>
           <TextField
             fullWidth
             placeholder="Create a password"
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onBlur={() => setTouched((t) => ({ ...t, password: true }))}
             autoComplete="new-password"
+            error={touched.password && !!passwordError}
+            helperText={touched.password ? passwordError : " "}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -178,21 +266,49 @@ export default function SignupPage() {
             }}
           />
 
+          <Typography sx={{ fontWeight: 700, mb: 1, mt: 1 }}>Confirm password</Typography>
+          <TextField
+            fullWidth
+            placeholder="Re-enter password"
+            type={showConfirm ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            onBlur={() => setTouched((t) => ({ ...t, confirmPassword: true }))}
+            autoComplete="new-password"
+            error={touched.confirmPassword && !!confirmPasswordError}
+            helperText={touched.confirmPassword ? confirmPasswordError : " "}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockOutlinedIcon sx={{ color: "text.secondary" }} />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowConfirm((v) => !v)} edge="end">
+                    {showConfirm ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
           <Button
             fullWidth
             type="submit"
-            disabled={loading}
+            disabled={loading || !isFormValid}
             sx={{
-              mt: 3,
+              mt: 2,
               height: 52,
               borderRadius: 2.5,
               fontWeight: 900,
               bgcolor: "#1063ff",
               color: "white",
               "&:hover": { bgcolor: "#0b54dc" },
+              "&.Mui-disabled": { bgcolor: "#c9d7ff", color: "white" },
             }}
           >
-            {loading ? <CircularProgress size={22} /> : "Create account  →"}
+            {loading ? <CircularProgress size={22} /> : "Create account →"}
           </Button>
 
           <Typography sx={{ textAlign: "center", mt: 2, fontSize: 13, color: "text.secondary" }}>

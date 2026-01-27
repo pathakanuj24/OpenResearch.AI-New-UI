@@ -37,7 +37,7 @@ export default function SocialProof({ items }: { items: string[] }) {
             textTransform: "uppercase",
           }}
         >
-          Trusted by students, labs, and teams
+          Trusted by students, AI teams and researchers worldwide
         </Typography>
 
         <Stack
