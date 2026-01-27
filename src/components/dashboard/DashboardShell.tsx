@@ -4,7 +4,6 @@ import {
   AppBar,
   Avatar,
   Box,
-  Button,
   Divider,
   Drawer,
   IconButton,
@@ -47,19 +46,6 @@ function useLogout() {
 function isActive(pathname: string, href?: string) {
   if (!href) return false;
   return pathname === href || pathname.startsWith(href + "/");
-}
-
-// Get page title from pathname
-function getPageTitle(pathname: string): string {
-  if (pathname === "/dashboard") return "Dashboard";
-  if (pathname.includes("/upload")) return "Upload Paper";
-  if (pathname.includes("/library")) return "Library";
-  if (pathname.includes("/chat")) return "AI Chat";
-  if (pathname.includes("/learn")) return "Learn";
-  if (pathname.includes("/graph")) return "Knowledge Graph";
-  if (pathname.includes("/discover")) return "Discover";
-  if (pathname.includes("/profile")) return "Profile";
-  return "Dashboard";
 }
 
 export default function DashboardShell({ children }: { children: ReactNode }) {
@@ -218,39 +204,6 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
         })}
       </List>
 
-      {/* Upgrade CTA */}
-      <Box sx={{ px: 2, pb: 2 }}>
-        <Box
-          sx={{
-            p: 2,
-            borderRadius: 3,
-            background: "linear-gradient(135deg, rgba(26,115,232,0.08) 0%, rgba(66,133,244,0.12) 100%)",
-            border: "1px solid rgba(26,115,232,0.15)",
-          }}
-        >
-          <Typography sx={{ fontWeight: 700, fontSize: 14, mb: 0.5 }}>
-            Upgrade to Pro
-          </Typography>
-          <Typography sx={{ color: "text.secondary", fontSize: 12, mb: 1.5, lineHeight: 1.5 }}>
-            Unlimited papers, priority analysis, and advanced features.
-          </Typography>
-          <Button
-            size="small"
-            variant="contained"
-            fullWidth
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 13,
-              py: 0.8,
-            }}
-          >
-            Upgrade Now
-          </Button>
-        </Box>
-      </Box>
-
       {/* User footer */}
       <Box sx={{ px: 2, pb: 2 }}>
         <Divider sx={{ mb: 2 }} />
@@ -339,10 +292,6 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
             >
               <MenuRoundedIcon />
             </IconButton>
-
-            <Typography sx={{ fontWeight: 700, fontSize: 18 }}>
-              {getPageTitle(pathname)}
-            </Typography>
 
             <Box sx={{ flex: 1 }} />
 
