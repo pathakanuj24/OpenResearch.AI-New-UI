@@ -3,11 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Alert,
   Avatar,
   Box,
   Button,
   Card,
   Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
   Stack,
@@ -22,7 +28,8 @@ import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
 import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import CameraAltRoundedIcon from "@mui/icons-material/CameraAltRounded";
-import { signOut } from "firebase/auth";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import { signOut, deleteUser } from "firebase/auth";
 
 import useCurrentUser from "@/lib/auth/useCurrentUser";
 import { useAnalyses } from "@/lib/hooks/useAnalyses";
@@ -35,6 +42,12 @@ export default function ProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || "");
+  
+  // Delete account state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const papers = analysesData?.analyses || [];
   const totalPapers = analysesData?.total || papers.length;
@@ -47,6 +60,36 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Logout error:", error);
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== "DELETE") return;
+    
+    setDeleteLoading(true);
+    setDeleteError("");
+    
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        await deleteUser(currentUser);
+        router.push("/");
+      }
+    } catch (error: any) {
+      console.error("Delete account error:", error);
+      if (error?.code === "auth/requires-recent-login") {
+        setDeleteError("For security, please log out and log back in before deleting your account.");
+      } else {
+        setDeleteError("Failed to delete account. Please try again later.");
+      }
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setDeleteConfirmText("");
+    setDeleteError("");
   };
 
   const formatDate = (date: string | undefined) => {
@@ -409,11 +452,114 @@ export default function ProfilePage() {
         <Button
           variant="outlined"
           color="error"
+          onClick={() => setDeleteDialogOpen(true)}
           sx={{ borderRadius: 2, fontWeight: 600 }}
         >
           Delete Account
         </Button>
       </Card>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 3 },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                bgcolor: "rgba(239,68,68,0.1)",
+                display: "grid",
+                placeItems: "center",
+              }}
+            >
+              <WarningAmberRoundedIcon sx={{ color: "error.main", fontSize: 28 }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Delete Account</Typography>
+              <Typography sx={{ color: "text.secondary", fontSize: 13 }}>
+                This action cannot be undone
+              </Typography>
+            </Box>
+          </Stack>
+        </DialogTitle>
+
+        <DialogContent>
+          {deleteError && (
+            <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+              {deleteError}
+            </Alert>
+          )}
+
+          <Typography sx={{ color: "text.secondary", fontSize: 14, mb: 2 }}>
+            This will permanently delete your account and all associated data including:
+          </Typography>
+
+          <Box
+            component="ul"
+            sx={{
+              pl: 2,
+              mb: 3,
+              "& li": {
+                color: "text.secondary",
+                fontSize: 14,
+                mb: 0.5,
+              },
+            }}
+          >
+            <li>All uploaded papers ({totalPapers} papers)</li>
+            <li>Analysis results and summaries</li>
+            <li>Chat history and conversations</li>
+            <li>Learning progress and recommendations</li>
+          </Box>
+
+          <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 1 }}>
+            Type <strong>DELETE</strong> to confirm:
+          </Typography>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Type DELETE to confirm"
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+              },
+            }}
+          />
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            sx={{ borderRadius: 2, fontWeight: 600 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={deleteConfirmText !== "DELETE" || deleteLoading}
+            onClick={handleDeleteAccount}
+            sx={{ borderRadius: 2, fontWeight: 600, minWidth: 140 }}
+          >
+            {deleteLoading ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              "Delete My Account"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
