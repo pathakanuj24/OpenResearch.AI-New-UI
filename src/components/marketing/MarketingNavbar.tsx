@@ -123,7 +123,7 @@ export default function MarketingNavbar() {
                   },
                 }}
               >
-                Get Started
+                let's Learn
               </Button>
             </Stack>
 

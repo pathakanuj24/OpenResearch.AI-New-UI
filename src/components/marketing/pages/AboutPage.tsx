@@ -93,7 +93,7 @@ export default function AboutPage() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Transforming How You Read Research
+              Transforming How You Read Research Papers
             </Typography>
             <Typography
               sx={{

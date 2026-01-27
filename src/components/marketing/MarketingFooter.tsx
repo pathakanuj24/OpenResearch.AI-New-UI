@@ -9,19 +9,13 @@ import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import { routes } from "@/lib/routes";
 
 const footerLinks = {
-  Product: [
-    { label: "Features", href: routes.features },
-    { label: "How it works", href: routes.how },
-  ],
   Company: [
     { label: "About", href: routes.about },
     { label: "Contact", href: routes.contact },
-    
   ],
   Legal: [
     { label: "Privacy Policy", href: "#" },
     { label: "Terms of Service", href: "#" },
-    // { label: "Cookie Policy", href: "#" },
   ],
 };
 

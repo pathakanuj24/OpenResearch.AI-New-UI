@@ -107,7 +107,7 @@ export default function LoginPage() {
   };
 
   const onForgotPassword = () => {
-    alert("Forgot password flow coming next.");
+    router.push("/forgot-password");
   };
 
   return (
