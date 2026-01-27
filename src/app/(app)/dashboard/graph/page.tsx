@@ -334,7 +334,7 @@ export default function KnowledgeGraphPage() {
     // Create node groups
     const node = g.append("g")
       .attr("class", "nodes")
-      .selectAll("g")
+      .selectAll<SVGGElement, D3Node>("g")
       .data(nodes)
       .join("g")
       .attr("cursor", "pointer")
