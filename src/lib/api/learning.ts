@@ -133,7 +133,7 @@ export const learningAPI = {
 
 // WebSocket URL builder
 export function getChatWebSocketUrl(sessionId: string, token: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001";
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://insightway.in:8001";
   const wsUrl = baseUrl.replace(/^http/, "ws");
   return `${wsUrl}/learning/chat/stream/${sessionId}?token=${token}`;
 }

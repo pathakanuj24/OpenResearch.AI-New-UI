@@ -69,7 +69,7 @@ export default function PaperViewerClient({ fileHash }: Props) {
           return;
         }
 
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001";
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://insightway.in:8001";
         const res = await fetch(`${baseUrl}/papers/${fileHash}/pdf`, {
           headers: { Authorization: `Bearer ${token}` },
         });

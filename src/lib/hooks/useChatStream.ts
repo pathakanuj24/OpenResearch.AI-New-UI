@@ -140,7 +140,7 @@ export function useChatStream({
           return;
         }
 
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8001";
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://insightway.in:8001";
 
         // Create Socket.IO connection
         const socket = io(baseUrl, {
