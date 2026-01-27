@@ -22,8 +22,6 @@ import { useState } from "react";
 import { routes } from "@/lib/routes";
 
 const nav = [
-  { label: "Features", href: routes.features },
-  { label: "How it works", href: routes.how },
   { label: "About", href: routes.about },
   { label: "Contact", href: routes.contact },
 ];

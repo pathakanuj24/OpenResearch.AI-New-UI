@@ -1,5 +1,10 @@
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import { AppDataProvider } from "@/lib/contexts/AppDataContext";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return <DashboardShell>{children}</DashboardShell>;
+  return (
+    <AppDataProvider>
+      <DashboardShell>{children}</DashboardShell>
+    </AppDataProvider>
+  );
 }

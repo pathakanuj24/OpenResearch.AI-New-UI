@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, memo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Box,
@@ -17,6 +17,9 @@ import {
   LinearProgress,
   Dialog,
   DialogContent,
+  InputAdornment,
+  Avatar,
+  Tooltip,
 } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
@@ -27,167 +30,448 @@ import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
 import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 import ChatRoundedIcon from "@mui/icons-material/ChatRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import AccessTimeRoundedIcon from "@mui/icons-material/AccessTimeRounded";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { learningAPI, RecommendedResource } from "@/lib/api/learning";
-import { useAnalyses } from "@/lib/hooks/useAnalyses";
+import { usePapers } from "@/lib/contexts/AppDataContext";
+import PageHeader from "@/components/ui/PageHeader";
+import EmptyState from "@/components/ui/EmptyState";
+import PaperCard from "@/components/ui/PaperCard";
 
-// Resource type icons
-const resourceTypeIcons: Record<string, any> = {
-  paper: ArticleRoundedIcon,
-  video: PlayCircleFilledRoundedIcon,
-  article: MenuBookRoundedIcon,
-  course: SchoolRoundedIcon,
-  tutorial: SchoolRoundedIcon,
-  blog: ArticleRoundedIcon,
+// Resource type configurations with distinct colors and styles
+const resourceTypeConfig: Record<string, { icon: any; color: string; gradient: string; label: string }> = {
+  paper: {
+    icon: ArticleRoundedIcon,
+    color: "#1a73e8",
+    gradient: "linear-gradient(135deg, #1a73e8 0%, #4285f4 100%)",
+    label: "Paper",
+  },
+  video: {
+    icon: PlayCircleFilledRoundedIcon,
+    color: "#ea580c",
+    gradient: "linear-gradient(135deg, #ea580c 0%, #f59e0b 100%)",
+    label: "Video",
+  },
+  article: {
+    icon: MenuBookRoundedIcon,
+    color: "#0891b2",
+    gradient: "linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)",
+    label: "Article",
+  },
+  course: {
+    icon: SchoolRoundedIcon,
+    color: "#7c3aed",
+    gradient: "linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)",
+    label: "Course",
+  },
+  tutorial: {
+    icon: SchoolRoundedIcon,
+    color: "#059669",
+    gradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+    label: "Tutorial",
+  },
+  blog: {
+    icon: ArticleRoundedIcon,
+    color: "#1a73e8",
+    gradient: "linear-gradient(135deg, #1a73e8 0%, #4285f4 100%)",
+    label: "Blog",
+  },
 };
 
-// Resource card component
-function ResourceCard({
+// Video resource card with thumbnail style
+const VideoResourceCard = memo(function VideoResourceCard({
+  resource,
+  onView,
+}: {
+  resource: RecommendedResource;
+  onView: () => void;
+}) {
+  const config = resourceTypeConfig.video;
+  const relevancePercent = Math.round(resource.relevance_score * 100);
+
+  // Extract YouTube thumbnail if possible
+  const youtubeId = resource.url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1];
+  const thumbnailUrl = youtubeId ? `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg` : null;
+
+  return (
+    <Card
+      elevation={0}
+      onClick={onView}
+      sx={{
+        border: "1px solid rgba(0,0,0,0.06)",
+        borderRadius: 3,
+        overflow: "hidden",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 12px 40px rgba(234,88,12,0.15)",
+          "& .play-btn": { transform: "scale(1.1)" },
+        },
+      }}
+    >
+      {/* Thumbnail area */}
+      <Box
+        sx={{
+          height: 140,
+          bgcolor: thumbnailUrl ? "transparent" : `${config.color}15`,
+          backgroundImage: thumbnailUrl ? `url(${thumbnailUrl})` : "none",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+        }}
+      >
+        <Box
+          className="play-btn"
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: config.gradient,
+            display: "grid",
+            placeItems: "center",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+            transition: "transform 0.2s ease",
+          }}
+        >
+          <PlayCircleFilledRoundedIcon sx={{ color: "white", fontSize: 32 }} />
+        </Box>
+
+        {/* Duration badge */}
+        {resource.duration && (
+          <Chip
+            icon={<AccessTimeRoundedIcon sx={{ fontSize: 14 }} />}
+            label={resource.duration}
+            size="small"
+            sx={{
+              position: "absolute",
+              bottom: 8,
+              right: 8,
+              bgcolor: "rgba(0,0,0,0.7)",
+              color: "white",
+              fontSize: 11,
+              height: 24,
+            }}
+          />
+        )}
+      </Box>
+
+      {/* Content */}
+      <Box sx={{ p: 2.5 }}>
+        <Typography
+          sx={{
+            fontWeight: 600,
+            fontSize: 15,
+            mb: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+          }}
+        >
+          {resource.title}
+        </Typography>
+
+        {resource.author && (
+          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 1 }}>
+            <PersonRoundedIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+              {resource.author}
+            </Typography>
+          </Stack>
+        )}
+
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Chip
+            label={`${relevancePercent}% match`}
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: 11,
+              fontWeight: 600,
+              bgcolor: `${config.color}15`,
+              color: config.color,
+            }}
+          />
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (resource.url) window.open(resource.url, "_blank");
+            }}
+          >
+            <OpenInNewRoundedIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Stack>
+      </Box>
+    </Card>
+  );
+});
+
+// Paper resource card with citation style
+const PaperResourceCard = memo(function PaperResourceCard({
+  resource,
+  onView,
+}: {
+  resource: RecommendedResource;
+  onView: () => void;
+}) {
+  const config = resourceTypeConfig.paper;
+  const relevancePercent = Math.round(resource.relevance_score * 100);
+
+  return (
+    <Card
+      elevation={0}
+      onClick={onView}
+      sx={{
+        p: 3,
+        border: `2px solid ${config.color}20`,
+        borderLeft: `4px solid ${config.color}`,
+        borderRadius: 2,
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        bgcolor: `${config.color}03`,
+        "&:hover": {
+          bgcolor: `${config.color}08`,
+          transform: "translateX(4px)",
+        },
+      }}
+    >
+      <Typography
+        sx={{
+          fontWeight: 600,
+          fontSize: 15,
+          mb: 1.5,
+          color: "#1a1a1a",
+        }}
+      >
+        {resource.title}
+      </Typography>
+
+      {resource.author && (
+        <Typography sx={{ fontSize: 13, color: "text.secondary", mb: 1.5, fontStyle: "italic" }}>
+          {resource.author}
+        </Typography>
+      )}
+
+      <Typography
+        sx={{
+          fontSize: 13,
+          color: "text.secondary",
+          lineHeight: 1.6,
+          mb: 2,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          display: "-webkit-box",
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: "vertical",
+        }}
+      >
+        {resource.explanation}
+      </Typography>
+
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Stack direction="row" spacing={1}>
+          <Chip
+            icon={<ArticleRoundedIcon sx={{ fontSize: 14 }} />}
+            label="Paper"
+            size="small"
+            sx={{ height: 24, fontSize: 11, bgcolor: `${config.color}15`, color: config.color }}
+          />
+          <Chip
+            label={`${relevancePercent}% match`}
+            size="small"
+            sx={{ height: 24, fontSize: 11, bgcolor: "rgba(0,0,0,0.06)" }}
+          />
+        </Stack>
+        {resource.url && (
+          <Button
+            size="small"
+            endIcon={<OpenInNewRoundedIcon sx={{ fontSize: 16 }} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(resource.url, "_blank");
+            }}
+            sx={{ textTransform: "none", fontSize: 12 }}
+          >
+            View Paper
+          </Button>
+        )}
+      </Stack>
+    </Card>
+  );
+});
+
+// Generic resource card for articles, tutorials, etc.
+const GenericResourceCard = memo(function GenericResourceCard({
+  resource,
+  onView,
+}: {
+  resource: RecommendedResource;
+  onView: () => void;
+}) {
+  const config = resourceTypeConfig[resource.resource_type] || resourceTypeConfig.article;
+  const Icon = config.icon;
+  const relevancePercent = Math.round(resource.relevance_score * 100);
+
+  return (
+    <Card
+      elevation={0}
+      onClick={onView}
+      sx={{
+        p: 2.5,
+        border: "1px solid rgba(0,0,0,0.06)",
+        borderRadius: 3,
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: config.color,
+          boxShadow: `0 8px 30px ${config.color}15`,
+          transform: "translateY(-2px)",
+          "& .icon-box": { transform: "scale(1.1)" },
+        },
+      }}
+    >
+      <Stack direction="row" spacing={2}>
+        <Box
+          className="icon-box"
+          sx={{
+            width: 52,
+            height: 52,
+            borderRadius: 3,
+            background: config.gradient,
+            display: "grid",
+            placeItems: "center",
+            flexShrink: 0,
+            transition: "transform 0.2s ease",
+          }}
+        >
+          <Icon sx={{ color: "white", fontSize: 26 }} />
+        </Box>
+
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+            <Chip
+              label={config.label}
+              size="small"
+              sx={{
+                height: 20,
+                fontSize: 10,
+                fontWeight: 700,
+                bgcolor: `${config.color}15`,
+                color: config.color,
+              }}
+            />
+            {resource.duration && (
+              <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
+                {resource.duration}
+              </Typography>
+            )}
+          </Stack>
+
+          <Typography
+            sx={{
+              fontWeight: 600,
+              fontSize: 15,
+              mb: 0.5,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {resource.title}
+          </Typography>
+
+          {resource.author && (
+            <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 1 }}>
+              by {resource.author}
+            </Typography>
+          )}
+
+          <Typography
+            sx={{
+              fontSize: 13,
+              color: "text.secondary",
+              lineHeight: 1.5,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {resource.explanation}
+          </Typography>
+
+          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 1.5 }}>
+            <Box sx={{ width: 100 }}>
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.3 }}>
+                <Typography sx={{ fontSize: 10, color: "text.secondary" }}>Relevance</Typography>
+                <Typography sx={{ fontSize: 10, fontWeight: 600, color: config.color }}>
+                  {relevancePercent}%
+                </Typography>
+              </Stack>
+              <LinearProgress
+                variant="determinate"
+                value={relevancePercent}
+                sx={{
+                  height: 4,
+                  borderRadius: 2,
+                  bgcolor: "rgba(0,0,0,0.06)",
+                  "& .MuiLinearProgress-bar": { bgcolor: config.color },
+                }}
+              />
+            </Box>
+
+            {resource.url && (
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(resource.url, "_blank");
+                }}
+              >
+                <OpenInNewRoundedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            )}
+          </Stack>
+        </Box>
+      </Stack>
+    </Card>
+  );
+});
+
+// Resource card selector based on type
+const ResourceCard = memo(function ResourceCard({
   resource,
   onView,
 }: {
   resource: RecommendedResource;
   onView: (resource: RecommendedResource) => void;
 }) {
-  const Icon = resourceTypeIcons[resource.resource_type] || ArticleRoundedIcon;
-  const relevancePercent = Math.round(resource.relevance_score * 100);
+  const handleView = useCallback(() => onView(resource), [onView, resource]);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-    >
-      <Card
-        elevation={0}
-        sx={{
-          p: 2.5,
-          border: "1px solid rgba(0,0,0,0.06)",
-          borderRadius: 3,
-          transition: "all 0.2s ease",
-          cursor: "pointer",
-          "&:hover": {
-            borderColor: "primary.main",
-            boxShadow: "0 4px 20px rgba(26,115,232,0.1)",
-            transform: "translateY(-2px)",
-          },
-        }}
-        onClick={() => onView(resource)}
-      >
-        <Stack direction="row" spacing={2}>
-          <Box
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 2.5,
-              bgcolor: "rgba(26,115,232,0.08)",
-              display: "grid",
-              placeItems: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Icon sx={{ color: "primary.main" }} />
-          </Box>
-
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              sx={{
-                fontWeight: 600,
-                fontSize: 15,
-                mb: 0.5,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              {resource.title}
-            </Typography>
-
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-              <Chip
-                label={resource.resource_type}
-                size="small"
-                sx={{
-                  height: 22,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  bgcolor: "rgba(0,0,0,0.04)",
-                }}
-              />
-              {resource.author && (
-                <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-                  by {resource.author}
-                </Typography>
-              )}
-              {resource.duration && (
-                <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-                  • {resource.duration}
-                </Typography>
-              )}
-            </Stack>
-
-            <Typography
-              sx={{
-                fontSize: 13,
-                color: "text.secondary",
-                lineHeight: 1.6,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              {resource.explanation}
-            </Typography>
-
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mt: 1.5 }}>
-              <Box sx={{ flex: 1, maxWidth: 120 }}>
-                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.3 }}>
-                  <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
-                    Relevance
-                  </Typography>
-                  <Typography sx={{ fontSize: 11, fontWeight: 600 }}>
-                    {relevancePercent}%
-                  </Typography>
-                </Stack>
-                <LinearProgress
-                  variant="determinate"
-                  value={relevancePercent}
-                  sx={{
-                    height: 4,
-                    borderRadius: 2,
-                    bgcolor: "rgba(0,0,0,0.06)",
-                  }}
-                />
-              </Box>
-
-              {resource.url && (
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(resource.url, "_blank");
-                  }}
-                  sx={{ color: "text.secondary" }}
-                >
-                  <OpenInNewRoundedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              )}
-            </Stack>
-          </Box>
-        </Stack>
-      </Card>
-    </motion.div>
-  );
-}
+  if (resource.resource_type === "video") {
+    return <VideoResourceCard resource={resource} onView={handleView} />;
+  }
+  if (resource.resource_type === "paper") {
+    return <PaperResourceCard resource={resource} onView={handleView} />;
+  }
+  return <GenericResourceCard resource={resource} onView={handleView} />;
+});
 
 // Embedded content viewer
-function EmbeddedViewer({
+const EmbeddedViewer = memo(function EmbeddedViewer({
   resource,
   open,
   onClose,
@@ -207,7 +491,6 @@ function EmbeddedViewer({
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogContent sx={{ p: 0, height: "80vh" }}>
         <Stack sx={{ height: "100%" }}>
-          {/* Header */}
           <Stack
             direction="row"
             alignItems="center"
@@ -233,18 +516,12 @@ function EmbeddedViewer({
                   Open External
                 </Button>
               )}
-              <Button
-                variant="contained"
-                size="small"
-                onClick={onClose}
-                sx={{ borderRadius: 2 }}
-              >
+              <Button variant="contained" size="small" onClick={onClose} sx={{ borderRadius: 2 }}>
                 Close
               </Button>
             </Stack>
           </Stack>
 
-          {/* Content */}
           <Box sx={{ flex: 1, overflow: "auto" }}>
             {isYouTube && youtubeId ? (
               <iframe
@@ -279,7 +556,7 @@ function EmbeddedViewer({
       </DialogContent>
     </Dialog>
   );
-}
+});
 
 export default function LearnPage() {
   const router = useRouter();
@@ -290,9 +567,11 @@ export default function LearnPage() {
   const [viewingResource, setViewingResource] = useState<RecommendedResource | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch papers to get paper info
-  const { data: analysesData } = useAnalyses(50, 0);
-  const selectedPaper = analysesData?.analyses?.find((p) => p.file_hash === paperHash);
+  const { papers } = usePapers();
+  const selectedPaper = useMemo(
+    () => papers.find((p) => p.file_hash === paperHash),
+    [papers, paperHash]
+  );
 
   // Fetch recommendations
   const {
@@ -305,259 +584,113 @@ export default function LearnPage() {
     enabled: !!paperHash,
   });
 
-  // No paper selected - show paper selector as full page
-  if (!paperHash) {
-    const papers = analysesData?.analyses || [];
-    const hasPapers = papers.length > 0;
-    
-    const filteredPapers = papers.filter((paper) =>
-      paper.file_name?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const filteredPapers = useMemo(() => {
+    if (!searchQuery) return papers;
+    return papers.filter((p) => p.file_name?.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [papers, searchQuery]);
 
-    if (!hasPapers) {
+  // No paper selected - show paper selector
+  if (!paperHash) {
+    if (papers.length === 0) {
       return (
-        <Box
-          sx={{
-            height: "calc(100vh - 140px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Card
-            elevation={0}
-            sx={{ p: 6, textAlign: "center", maxWidth: 400, border: "1px dashed rgba(0,0,0,0.15)" }}
-          >
-            <SchoolRoundedIcon sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
-            <Typography sx={{ fontWeight: 700, fontSize: 18, mb: 1 }}>
-              No Papers Yet
-            </Typography>
-            <Typography sx={{ color: "text.secondary", mb: 3 }}>
-              Upload and chat about a paper to get personalized learning recommendations.
-            </Typography>
-            <Stack direction="row" spacing={2} justifyContent="center">
-              <Button
-                variant="contained"
-                startIcon={<ChatRoundedIcon />}
-                onClick={() => router.push("/dashboard/chat")}
-                sx={{ borderRadius: 2.5, fontWeight: 600 }}
-              >
-                Start Chat
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => router.push("/dashboard/upload")}
-                sx={{ borderRadius: 2.5, fontWeight: 600 }}
-              >
-                Upload Paper
-              </Button>
-            </Stack>
-          </Card>
+        <Box sx={{ height: "calc(100vh - 140px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <EmptyState
+            icon={SchoolRoundedIcon}
+            title="No Papers Yet"
+            description="Upload and chat about a paper to get personalized learning recommendations."
+            action={{ label: "Start Chat", onClick: () => router.push("/dashboard/chat") }}
+            secondaryAction={{ label: "Upload Paper", onClick: () => router.push("/dashboard/upload") }}
+            variant="illustrated"
+          />
         </Box>
       );
     }
 
     return (
       <Box>
-        {/* Header */}
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          alignItems={{ xs: "stretch", sm: "center" }}
-          justifyContent="space-between"
-          spacing={2}
-          sx={{ mb: 4 }}
-        >
-          <Box>
-            <Typography sx={{ fontWeight: 700, fontSize: 28 }}>Learn</Typography>
-            <Typography sx={{ color: "text.secondary", mt: 0.5 }}>
-              Select a paper to view personalized recommendations
-            </Typography>
-          </Box>
-          <Button
-            variant="outlined"
-            startIcon={<ChatRoundedIcon />}
-            onClick={() => router.push("/dashboard/chat")}
-            sx={{ borderRadius: 2.5, fontWeight: 600, whiteSpace: "nowrap" }}
-          >
-            Chat First
-          </Button>
-        </Stack>
+        <PageHeader
+          title="Learning Resources"
+          subtitle="Select a paper to view personalized recommendations"
+          action={
+            <Button
+              variant="outlined"
+              startIcon={<ChatRoundedIcon />}
+              onClick={() => router.push("/dashboard/chat")}
+              sx={{ borderRadius: 2.5, fontWeight: 600 }}
+            >
+              Chat First
+            </Button>
+          }
+        />
 
-        {/* Info Banner */}
+        {/* Info banner */}
         <Card
           elevation={0}
           sx={{
             p: 2.5,
             mb: 3,
-            bgcolor: "rgba(26,115,232,0.04)",
+            background: "linear-gradient(135deg, rgba(26,115,232,0.06) 0%, rgba(99,102,241,0.08) 100%)",
             border: "1px solid rgba(26,115,232,0.1)",
             borderRadius: 3,
           }}
         >
           <Stack direction="row" spacing={2} alignItems="center">
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: 2,
-                bgcolor: "primary.main",
-                display: "grid",
-                placeItems: "center",
-              }}
-            >
-              <SchoolRoundedIcon sx={{ color: "white", fontSize: 20 }} />
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
-                How it works
-              </Typography>
+            <Avatar sx={{ bgcolor: "primary.main", width: 44, height: 44 }}>
+              <SchoolRoundedIcon />
+            </Avatar>
+            <Box>
+              <Typography sx={{ fontWeight: 600, fontSize: 14 }}>How it works</Typography>
               <Typography sx={{ color: "text.secondary", fontSize: 13 }}>
-                Chat with AI about a paper → Get personalized pre/post learning resources and external tutorials
+                Chat with AI about a paper → Get personalized pre/post learning resources and tutorials
               </Typography>
             </Box>
           </Stack>
         </Card>
 
         {/* Search */}
-        <Card
-          elevation={0}
-          sx={{
-            p: 2,
-            mb: 3,
-            border: "1px solid rgba(0,0,0,0.06)",
-            borderRadius: 3,
+        <TextField
+          placeholder="Search papers..."
+          size="small"
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{ mb: 3, maxWidth: 400 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRoundedIcon sx={{ fontSize: 20, color: "text.secondary" }} />
+              </InputAdornment>
+            ),
           }}
-        >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <TextField
-              placeholder="Search papers..."
-              size="small"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{
-                flex: 1,
-                maxWidth: 400,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  bgcolor: "rgba(0,0,0,0.02)",
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <Box sx={{ color: "text.secondary", mr: 1, display: "flex" }}>
-                    <SearchRoundedIcon sx={{ fontSize: 20 }} />
-                  </Box>
-                ),
-              }}
-            />
-            <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
-              {filteredPapers.length} paper{filteredPapers.length !== 1 ? "s" : ""}
-            </Typography>
-          </Stack>
-        </Card>
+        />
 
-        {/* Papers Grid */}
+        {/* Papers grid */}
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr",
-              sm: "repeat(2, 1fr)",
-              lg: "repeat(3, 1fr)",
-            },
+            gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
             gap: 2.5,
           }}
         >
           {filteredPapers.map((paper) => (
-            <motion.div
+            <PaperCard
               key={paper.file_hash}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card
-                elevation={0}
-                sx={{
-                  p: 3,
-                  height: "100%",
-                  border: "1px solid rgba(0,0,0,0.06)",
-                  borderRadius: 3,
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  "&:hover": {
-                    borderColor: "primary.main",
-                    boxShadow: "0 8px 30px rgba(26,115,232,0.12)",
-                    transform: "translateY(-2px)",
-                  },
-                }}
-                onClick={() => router.push(`/dashboard/learn?paper=${paper.file_hash}`)}
-              >
-                <Stack spacing={2}>
-                  <Box
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 2.5,
-                      bgcolor: "rgba(239,68,68,0.08)",
-                      display: "grid",
-                      placeItems: "center",
-                    }}
-                  >
-                    <ArticleRoundedIcon sx={{ color: "error.main", fontSize: 24 }} />
-                  </Box>
-                  <Box>
-                    <Typography
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: 15,
-                        mb: 0.5,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        lineHeight: 1.4,
-                      }}
-                    >
-                      {paper.file_name?.replace(".pdf", "") || "Untitled Paper"}
-                    </Typography>
-                    <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
-                      Click to view recommendations
-                    </Typography>
-                  </Box>
-                  <Chip
-                    label={paper.status === "completed" ? "Ready" : "Analyzed"}
-                    size="small"
-                    sx={{
-                      width: "fit-content",
-                      height: 24,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      bgcolor: "rgba(34,197,94,0.08)",
-                      color: "success.main",
-                    }}
-                  />
-                </Stack>
-              </Card>
-            </motion.div>
+              fileHash={paper.file_hash}
+              fileName={paper.file_name}
+              hasAnalysis={paper.has_analysis}
+              variant="detailed"
+              onClick={() => router.push(`/dashboard/learn?paper=${paper.file_hash}`)}
+            />
           ))}
         </Box>
 
-        {/* Empty search result */}
         {filteredPapers.length === 0 && searchQuery && (
-          <Card
-            elevation={0}
-            sx={{
-              p: 4,
-              textAlign: "center",
-              border: "1px dashed rgba(0,0,0,0.15)",
-              borderRadius: 3,
-            }}
-          >
-            <Typography sx={{ color: "text.secondary" }}>
-              No papers found matching "{searchQuery}"
-            </Typography>
-          </Card>
+          <EmptyState
+            icon={SearchRoundedIcon}
+            title="No papers found"
+            description={`No papers matching "${searchQuery}"`}
+            variant="minimal"
+          />
         )}
       </Box>
     );
@@ -567,7 +700,7 @@ export default function LearnPage() {
     <Box>
       {/* Header */}
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-        <IconButton onClick={() => router.push("/dashboard/learn")}>
+        <IconButton onClick={() => router.push("/dashboard/learn")} sx={{ bgcolor: "rgba(0,0,0,0.04)" }}>
           <ArrowBackRoundedIcon />
         </IconButton>
         <Box sx={{ flex: 1 }}>
@@ -588,50 +721,13 @@ export default function LearnPage() {
           </Typography>
         </Stack>
       ) : recommendationsError ? (
-        <Card elevation={0} sx={{ p: 6, textAlign: "center", border: "1px solid rgba(239,68,68,0.2)", maxWidth: 500, mx: "auto" }}>
-          <Box
-            sx={{
-              width: 64,
-              height: 64,
-              borderRadius: 3,
-              bgcolor: "rgba(239,68,68,0.08)",
-              display: "grid",
-              placeItems: "center",
-              mx: "auto",
-              mb: 2,
-            }}
-          >
-            <ChatRoundedIcon sx={{ fontSize: 32, color: "error.main" }} />
-          </Box>
-          <Typography sx={{ color: "error.main", fontWeight: 700, fontSize: 18 }}>
-            No Recommendations Yet
-          </Typography>
-          <Typography sx={{ color: "text.secondary", mt: 1, mb: 3, lineHeight: 1.7 }}>
-            To get personalized recommendations, you need to:
-          </Typography>
-          <Stack spacing={1.5} sx={{ textAlign: "left", maxWidth: 300, mx: "auto", mb: 3 }}>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: "primary.main", color: "white", display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700 }}>1</Box>
-              <Typography sx={{ fontSize: 14 }}>Start a chat about this paper</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: "primary.main", color: "white", display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700 }}>2</Box>
-              <Typography sx={{ fontSize: 14 }}>Have a conversation (3+ messages)</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <Box sx={{ width: 24, height: 24, borderRadius: "50%", bgcolor: "primary.main", color: "white", display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700 }}>3</Box>
-              <Typography sx={{ fontSize: 14 }}>Click "Get Recommendations"</Typography>
-            </Stack>
-          </Stack>
-          <Button
-            variant="contained"
-            startIcon={<ChatRoundedIcon />}
-            onClick={() => router.push("/dashboard/chat")}
-            sx={{ borderRadius: 2.5, fontWeight: 600 }}
-          >
-            Start Chat Session
-          </Button>
-        </Card>
+        <EmptyState
+          icon={ChatRoundedIcon}
+          title="No Recommendations Yet"
+          description="Chat about this paper first (3+ messages), then click 'Get Recommendations' to unlock personalized learning resources."
+          action={{ label: "Start Chat Session", onClick: () => router.push("/dashboard/chat") }}
+          variant="illustrated"
+        />
       ) : (
         <Box>
           {/* Tabs */}
@@ -641,11 +737,7 @@ export default function LearnPage() {
               onChange={(_, v) => setActiveTab(v)}
               sx={{
                 px: 2,
-                "& .MuiTab-root": {
-                  textTransform: "none",
-                  fontWeight: 600,
-                  minHeight: 56,
-                },
+                "& .MuiTab-root": { textTransform: "none", fontWeight: 600, minHeight: 56 },
               }}
             >
               <Tab
@@ -669,106 +761,64 @@ export default function LearnPage() {
           {/* Tab Content */}
           <AnimatePresence mode="wait">
             {activeTab === 0 && (
-              <motion.div
-                key="pre"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
+              <motion.div key="pre" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <Typography sx={{ color: "text.secondary", mb: 2, fontSize: 14 }}>
                   Papers and resources to study first for better understanding.
                 </Typography>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-                    gap: 2,
-                  }}
-                >
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" }, gap: 2 }}>
                   {recommendations?.pre_learning?.map((resource, idx) => (
-                    <ResourceCard
-                      key={idx}
-                      resource={resource}
-                      onView={setViewingResource}
-                    />
+                    <ResourceCard key={idx} resource={resource} onView={setViewingResource} />
                   ))}
                 </Box>
                 {(!recommendations?.pre_learning || recommendations.pre_learning.length === 0) && (
-                  <Card elevation={0} sx={{ p: 4, textAlign: "center", border: "1px dashed rgba(0,0,0,0.1)" }}>
-                    <Typography sx={{ color: "text.secondary" }}>
-                      No pre-learning resources found.
-                    </Typography>
-                  </Card>
+                  <EmptyState
+                    icon={MenuBookRoundedIcon}
+                    title="No pre-learning resources"
+                    description="No foundational resources found for this paper."
+                    variant="minimal"
+                  />
                 )}
               </motion.div>
             )}
 
             {activeTab === 1 && (
-              <motion.div
-                key="post"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
+              <motion.div key="post" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <Typography sx={{ color: "text.secondary", mb: 2, fontSize: 14 }}>
                   Advanced papers that build upon or extend this work.
                 </Typography>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-                    gap: 2,
-                  }}
-                >
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" }, gap: 2 }}>
                   {recommendations?.post_learning?.map((resource, idx) => (
-                    <ResourceCard
-                      key={idx}
-                      resource={resource}
-                      onView={setViewingResource}
-                    />
+                    <ResourceCard key={idx} resource={resource} onView={setViewingResource} />
                   ))}
                 </Box>
                 {(!recommendations?.post_learning || recommendations.post_learning.length === 0) && (
-                  <Card elevation={0} sx={{ p: 4, textAlign: "center", border: "1px dashed rgba(0,0,0,0.1)" }}>
-                    <Typography sx={{ color: "text.secondary" }}>
-                      No post-learning resources found.
-                    </Typography>
-                  </Card>
+                  <EmptyState
+                    icon={TrendingUpRoundedIcon}
+                    title="No post-learning resources"
+                    description="No advanced follow-up resources found."
+                    variant="minimal"
+                  />
                 )}
               </motion.div>
             )}
 
             {activeTab === 2 && (
-              <motion.div
-                key="external"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
+              <motion.div key="external" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                 <Typography sx={{ color: "text.secondary", mb: 2, fontSize: 14 }}>
                   Tutorials, videos, and guides to help you learn related concepts.
                 </Typography>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-                    gap: 2,
-                  }}
-                >
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }, gap: 2 }}>
                   {recommendations?.external_resources?.map((resource, idx) => (
-                    <ResourceCard
-                      key={idx}
-                      resource={resource}
-                      onView={setViewingResource}
-                    />
+                    <ResourceCard key={idx} resource={resource} onView={setViewingResource} />
                   ))}
                 </Box>
                 {(!recommendations?.external_resources || recommendations.external_resources.length === 0) && (
-                  <Card elevation={0} sx={{ p: 4, textAlign: "center", border: "1px dashed rgba(0,0,0,0.1)" }}>
-                    <Typography sx={{ color: "text.secondary" }}>
-                      No external resources found.
-                    </Typography>
-                  </Card>
+                  <EmptyState
+                    icon={PlayCircleFilledRoundedIcon}
+                    title="No external resources"
+                    description="No tutorials or videos found."
+                    variant="minimal"
+                  />
                 )}
               </motion.div>
             )}
