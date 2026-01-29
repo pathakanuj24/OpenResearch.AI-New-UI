@@ -74,11 +74,11 @@ function NodeDetailPanel({
       open={!!node}
       onClose={onClose}
       PaperProps={{
-        sx: { width: 400, p: 3 },
+        sx: { width: { xs: "100%", sm: 400 }, maxWidth: "100vw", p: { xs: 2, sm: 3 } },
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-        <Typography sx={{ fontWeight: 700, fontSize: 18 }}>Paper Details</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: { xs: 16, sm: 18 } }}>Paper Details</Typography>
         <IconButton onClick={onClose} size="small">
           <CloseRoundedIcon />
         </IconButton>
@@ -695,19 +695,29 @@ export default function KnowledgeGraphPage() {
     <Box sx={{ height: "calc(100vh - 140px)", display: "flex", flexDirection: "column" }}>
       {/* Header */}
       <Stack
-        direction="row"
-        alignItems="center"
+        direction={{ xs: "column", sm: "row" }}
+        alignItems={{ xs: "flex-start", sm: "center" }}
         justifyContent="space-between"
+        spacing={{ xs: 1, sm: 0 }}
         sx={{ pb: 2, borderBottom: "1px solid rgba(0,0,0,0.06)", mb: 2 }}
       >
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <IconButton onClick={() => router.push("/dashboard/graph")}>
-            <ArrowBackRoundedIcon />
+        <Stack direction="row" alignItems="center" spacing={{ xs: 1, sm: 2 }}>
+          <IconButton onClick={() => router.push("/dashboard/graph")} size="small">
+            <ArrowBackRoundedIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </IconButton>
-          <Box>
-            <Typography sx={{ fontWeight: 700, fontSize: 24 }}>Knowledge Graph</Typography>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>Knowledge Graph</Typography>
             {selectedPaper && (
-              <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
+              <Typography 
+                sx={{ 
+                  color: "text.secondary", 
+                  fontSize: { xs: 12, sm: 14 },
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: { xs: 200, sm: 400 },
+                }}
+              >
                 {selectedPaper.file_name?.replace(".pdf", "")}
               </Typography>
             )}
@@ -715,43 +725,52 @@ export default function KnowledgeGraphPage() {
         </Stack>
 
         {/* Zoom controls */}
-        <Stack direction="row" spacing={1} alignItems="center">
-          <IconButton onClick={handleZoomIn} title="Zoom In">
-            <ZoomInRoundedIcon />
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <IconButton onClick={handleZoomIn} title="Zoom In" size="small">
+            <ZoomInRoundedIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </IconButton>
-          <IconButton onClick={handleZoomOut} title="Zoom Out">
-            <ZoomOutRoundedIcon />
+          <IconButton onClick={handleZoomOut} title="Zoom Out" size="small">
+            <ZoomOutRoundedIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </IconButton>
-          <IconButton onClick={handleResetView} title="Reset View">
-            <CenterFocusStrongRoundedIcon />
+          <IconButton onClick={handleResetView} title="Reset View" size="small">
+            <CenterFocusStrongRoundedIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </IconButton>
         </Stack>
       </Stack>
 
       {/* Legend & Stats */}
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }} flexWrap="wrap" alignItems="center">
-        {nodeTypes.map(([type, color]) => (
-          <Stack key={type} direction="row" spacing={1} alignItems="center">
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: "50%",
-                bgcolor: color,
-              }}
-            />
-            <Typography sx={{ fontSize: 12, color: "text.secondary", textTransform: "capitalize" }}>
-              {type}
+      <Box sx={{ 
+        mb: 2, 
+        overflowX: "auto",
+        "&::-webkit-scrollbar": { display: "none" },
+        msOverflowStyle: "none",
+        scrollbarWidth: "none",
+      }}>
+        <Stack direction="row" spacing={{ xs: 1.5, sm: 2 }} flexWrap="nowrap" alignItems="center" sx={{ minWidth: "max-content" }}>
+          {nodeTypes.map(([type, color]) => (
+            <Stack key={type} direction="row" spacing={0.5} alignItems="center">
+              <Box
+                sx={{
+                  width: { xs: 10, sm: 12 },
+                  height: { xs: 10, sm: 12 },
+                  borderRadius: "50%",
+                  bgcolor: color,
+                  flexShrink: 0,
+                }}
+              />
+              <Typography sx={{ fontSize: { xs: 11, sm: 12 }, color: "text.secondary", textTransform: "capitalize", whiteSpace: "nowrap" }}>
+                {type}
+              </Typography>
+            </Stack>
+          ))}
+          <Box sx={{ flex: 1, minWidth: 8 }} />
+          {graphData?.stats && (
+            <Typography sx={{ fontSize: { xs: 11, sm: 12 }, color: "text.secondary", whiteSpace: "nowrap" }}>
+              {graphData.stats.total_nodes} papers • {graphData.stats.total_edges} connections
             </Typography>
-          </Stack>
-        ))}
-        <Box sx={{ flex: 1 }} />
-        {graphData?.stats && (
-          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-            {graphData.stats.total_nodes} papers • {graphData.stats.total_edges} connections
-          </Typography>
-        )}
-      </Stack>
+          )}
+        </Stack>
+      </Box>
 
       {/* Graph Container */}
       <Card

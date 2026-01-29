@@ -80,34 +80,32 @@ const StatsBar = memo(function StatsBar({
     <Card
       elevation={0}
       sx={{
-        p: 2.5,
+        p: { xs: 2, sm: 2.5 },
         mb: 3,
         border: "1px solid rgba(0,0,0,0.06)",
         borderRadius: 3,
         background: "linear-gradient(135deg, rgba(26,115,232,0.02) 0%, rgba(99,102,241,0.04) 100%)",
       }}
     >
-      <Stack direction={{ xs: "column", sm: "row" }} spacing={3} alignItems="center">
-        <Stack direction="row" spacing={4} sx={{ flex: 1 }}>
-          <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: 28, color: "primary.main" }}>
-              {total}
-            </Typography>
-            <Typography sx={{ color: "text.secondary", fontSize: 13 }}>Total Papers</Typography>
-          </Box>
-          <Box sx={{ borderLeft: "1px solid rgba(0,0,0,0.08)", pl: 4 }}>
-            <Typography sx={{ fontWeight: 800, fontSize: 28, color: "#22c55e" }}>
-              {analyzed}
-            </Typography>
-            <Typography sx={{ color: "text.secondary", fontSize: 13 }}>Analyzed</Typography>
-          </Box>
-          <Box sx={{ borderLeft: "1px solid rgba(0,0,0,0.08)", pl: 4 }}>
-            <Typography sx={{ fontWeight: 800, fontSize: 28, color: "#f59e0b" }}>
-              {pending}
-            </Typography>
-            <Typography sx={{ color: "text.secondary", fontSize: 13 }}>Pending</Typography>
-          </Box>
-        </Stack>
+      <Stack direction="row" spacing={{ xs: 2, sm: 4 }} alignItems="center" justifyContent={{ xs: "space-around", sm: "flex-start" }}>
+        <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
+          <Typography sx={{ fontWeight: 800, fontSize: { xs: 22, sm: 28 }, color: "primary.main" }}>
+            {total}
+          </Typography>
+          <Typography sx={{ color: "text.secondary", fontSize: { xs: 11, sm: 13 } }}>Total</Typography>
+        </Box>
+        <Box sx={{ borderLeft: "1px solid rgba(0,0,0,0.08)", pl: { xs: 2, sm: 4 }, textAlign: { xs: "center", sm: "left" } }}>
+          <Typography sx={{ fontWeight: 800, fontSize: { xs: 22, sm: 28 }, color: "#22c55e" }}>
+            {analyzed}
+          </Typography>
+          <Typography sx={{ color: "text.secondary", fontSize: { xs: 11, sm: 13 } }}>Analyzed</Typography>
+        </Box>
+        <Box sx={{ borderLeft: "1px solid rgba(0,0,0,0.08)", pl: { xs: 2, sm: 4 }, textAlign: { xs: "center", sm: "left" } }}>
+          <Typography sx={{ fontWeight: 800, fontSize: { xs: 22, sm: 28 }, color: "#f59e0b" }}>
+            {pending}
+          </Typography>
+          <Typography sx={{ color: "text.secondary", fontSize: { xs: 11, sm: 13 } }}>Pending</Typography>
+        </Box>
       </Stack>
     </Card>
   );
@@ -228,66 +226,81 @@ export default function LibraryPage() {
               }}
             />
 
-            <Stack direction="row" spacing={2} alignItems="center">
-              {/* Filter chips */}
-              <Stack direction="row" spacing={1}>
-                <FilterChip
-                  label="All"
-                  count={papers.length}
-                  active={filterStatus === "all"}
-                  onClick={() => setFilterStatus("all")}
-                />
-                <FilterChip
-                  label="Analyzed"
-                  count={analyzedCount}
-                  active={filterStatus === "analyzed"}
-                  onClick={() => setFilterStatus("analyzed")}
-                />
-                <FilterChip
-                  label="Pending"
-                  count={pendingCount}
-                  active={filterStatus === "pending"}
-                  onClick={() => setFilterStatus("pending")}
-                />
-              </Stack>
+            <Stack 
+              direction={{ xs: "column", sm: "row" }} 
+              spacing={{ xs: 1.5, sm: 2 }} 
+              alignItems={{ xs: "stretch", sm: "center" }}
+              sx={{ width: { xs: "100%", md: "auto" } }}
+            >
+              {/* Filter chips - scrollable on mobile */}
+              <Box sx={{ 
+                overflowX: "auto", 
+                pb: { xs: 0.5, sm: 0 },
+                "&::-webkit-scrollbar": { display: "none" },
+                msOverflowStyle: "none",
+                scrollbarWidth: "none",
+              }}>
+                <Stack direction="row" spacing={1} sx={{ minWidth: "max-content" }}>
+                  <FilterChip
+                    label="All"
+                    count={papers.length}
+                    active={filterStatus === "all"}
+                    onClick={() => setFilterStatus("all")}
+                  />
+                  <FilterChip
+                    label="Analyzed"
+                    count={analyzedCount}
+                    active={filterStatus === "analyzed"}
+                    onClick={() => setFilterStatus("analyzed")}
+                  />
+                  <FilterChip
+                    label="Pending"
+                    count={pendingCount}
+                    active={filterStatus === "pending"}
+                    onClick={() => setFilterStatus("pending")}
+                  />
+                </Stack>
+              </Box>
 
-              {/* Sort */}
-              <FormControl size="small" sx={{ minWidth: 130 }}>
-                <Select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortBy)}
-                  displayEmpty
-                  sx={{ borderRadius: 2, fontSize: 14 }}
-                  startAdornment={
-                    <SortRoundedIcon sx={{ fontSize: 18, color: "text.secondary", mr: 0.5 }} />
-                  }
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent={{ xs: "space-between", sm: "flex-start" }}>
+                {/* Sort */}
+                <FormControl size="small" sx={{ minWidth: { xs: 100, sm: 130 } }}>
+                  <Select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortBy)}
+                    displayEmpty
+                    sx={{ borderRadius: 2, fontSize: { xs: 12, sm: 14 } }}
+                    startAdornment={
+                      <SortRoundedIcon sx={{ fontSize: { xs: 16, sm: 18 }, color: "text.secondary", mr: 0.5 }} />
+                    }
+                  >
+                    <MenuItem value="newest">Newest</MenuItem>
+                    <MenuItem value="oldest">Oldest</MenuItem>
+                    <MenuItem value="name">Name</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* View toggle */}
+                <ToggleButtonGroup
+                  value={viewMode}
+                  exclusive
+                  onChange={handleViewModeChange}
+                  size="small"
+                  sx={{
+                    "& .MuiToggleButton-root": {
+                      border: "1px solid rgba(0,0,0,0.1)",
+                      px: { xs: 1, sm: 1.5 },
+                    },
+                  }}
                 >
-                  <MenuItem value="newest">Newest</MenuItem>
-                  <MenuItem value="oldest">Oldest</MenuItem>
-                  <MenuItem value="name">Name</MenuItem>
-                </Select>
-              </FormControl>
-
-              {/* View toggle */}
-              <ToggleButtonGroup
-                value={viewMode}
-                exclusive
-                onChange={handleViewModeChange}
-                size="small"
-                sx={{
-                  "& .MuiToggleButton-root": {
-                    border: "1px solid rgba(0,0,0,0.1)",
-                    px: 1.5,
-                  },
-                }}
-              >
-                <ToggleButton value="grid">
-                  <GridViewRoundedIcon sx={{ fontSize: 20 }} />
-                </ToggleButton>
-                <ToggleButton value="list">
-                  <ViewListRoundedIcon sx={{ fontSize: 20 }} />
-                </ToggleButton>
-              </ToggleButtonGroup>
+                  <ToggleButton value="grid">
+                    <GridViewRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
+                  </ToggleButton>
+                  <ToggleButton value="list">
+                    <ViewListRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Stack>
             </Stack>
           </Stack>
         </Card>

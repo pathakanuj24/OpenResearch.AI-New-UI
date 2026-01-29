@@ -406,17 +406,20 @@ export default function PaperDetailsPage() {
     <Box>
       {/* Header */}
       <Stack
-        direction="row"
-        alignItems="center"
+        direction={{ xs: "column", sm: "row" }}
+        alignItems={{ xs: "flex-start", sm: "center" }}
         justifyContent="space-between"
+        spacing={2}
         sx={{ mb: 3 }}
       >
         <Button
           startIcon={<ArrowBackRoundedIcon />}
           onClick={() => router.push("/dashboard/library")}
-          sx={{ color: "text.secondary", fontWeight: 500 }}
+          sx={{ color: "text.secondary", fontWeight: 500, fontSize: { xs: 13, sm: 14 } }}
+          size="small"
         >
-          Back to Library
+          <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Back to Library</Box>
+          <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>Back</Box>
         </Button>
 
         <Stack direction="row" spacing={1}>
@@ -445,7 +448,7 @@ export default function PaperDetailsPage() {
       <Card
         elevation={0}
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 3 },
           mb: 3,
           border: "1px solid rgba(0,0,0,0.06)",
           borderRadius: 3,
@@ -458,8 +461,8 @@ export default function PaperDetailsPage() {
           alignItems={{ xs: "flex-start", md: "flex-start" }}
           spacing={2}
         >
-          <Box sx={{ flex: 1 }}>
-            <Typography sx={{ fontWeight: 700, fontSize: 22, lineHeight: 1.4, mb: 1.5 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 22 }, lineHeight: 1.4, mb: 1.5 }}>
               {ds?.title || paper?.file_name?.replace(".pdf", "") || "Paper Details"}
             </Typography>
 

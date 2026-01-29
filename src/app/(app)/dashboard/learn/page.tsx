@@ -488,32 +488,40 @@ const EmbeddedViewer = memo(function EmbeddedViewer({
     : null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogContent sx={{ p: 0, height: "80vh" }}>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="lg" 
+      fullWidth
+      fullScreen={typeof window !== "undefined" && window.innerWidth < 600}
+    >
+      <DialogContent sx={{ p: 0, height: { xs: "100vh", sm: "80vh" } }}>
         <Stack sx={{ height: "100%" }}>
           <Stack
-            direction="row"
-            alignItems="center"
+            direction={{ xs: "column", sm: "row" }}
+            alignItems={{ xs: "flex-start", sm: "center" }}
             justifyContent="space-between"
+            spacing={1}
             sx={{ p: 2, borderBottom: "1px solid rgba(0,0,0,0.06)" }}
           >
-            <Box>
-              <Typography sx={{ fontWeight: 700, fontSize: 18 }}>{resource.title}</Typography>
-              <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontWeight: 700, fontSize: { xs: 16, sm: 18 } }} noWrap>{resource.title}</Typography>
+              <Typography sx={{ color: "text.secondary", fontSize: { xs: 12, sm: 14 } }}>
                 {resource.resource_type}
                 {resource.author && ` • ${resource.author}`}
               </Typography>
             </Box>
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
               {resource.url && (
                 <Button
                   variant="outlined"
                   size="small"
                   startIcon={<OpenInNewRoundedIcon />}
                   onClick={() => window.open(resource.url, "_blank")}
-                  sx={{ borderRadius: 2 }}
+                  sx={{ borderRadius: 2, fontSize: { xs: 12, sm: 14 } }}
                 >
-                  Open External
+                  <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Open External</Box>
+                  <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>Open</Box>
                 </Button>
               )}
               <Button variant="contained" size="small" onClick={onClose} sx={{ borderRadius: 2 }}>
@@ -699,14 +707,26 @@ export default function LearnPage() {
   return (
     <Box>
       {/* Header */}
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-        <IconButton onClick={() => router.push("/dashboard/learn")} sx={{ bgcolor: "rgba(0,0,0,0.04)" }}>
-          <ArrowBackRoundedIcon />
+      <Stack direction="row" alignItems="center" spacing={{ xs: 1, sm: 2 }} sx={{ mb: 3 }}>
+        <IconButton 
+          onClick={() => router.push("/dashboard/learn")} 
+          sx={{ bgcolor: "rgba(0,0,0,0.04)", flexShrink: 0 }}
+          size="small"
+        >
+          <ArrowBackRoundedIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
         </IconButton>
-        <Box sx={{ flex: 1 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: 24 }}>Learning Resources</Typography>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>Learning Resources</Typography>
           {selectedPaper && (
-            <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
+            <Typography 
+              sx={{ 
+                color: "text.secondary", 
+                fontSize: { xs: 12, sm: 14 },
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               {selectedPaper.file_name?.replace(".pdf", "")}
             </Typography>
           )}
@@ -731,29 +751,45 @@ export default function LearnPage() {
       ) : (
         <Box>
           {/* Tabs */}
-          <Card elevation={0} sx={{ border: "1px solid rgba(0,0,0,0.06)", borderRadius: 3, mb: 3 }}>
+          <Card elevation={0} sx={{ border: "1px solid rgba(0,0,0,0.06)", borderRadius: 3, mb: 3, overflow: "hidden" }}>
             <Tabs
               value={activeTab}
               onChange={(_, v) => setActiveTab(v)}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
               sx={{
-                px: 2,
-                "& .MuiTab-root": { textTransform: "none", fontWeight: 600, minHeight: 56 },
+                px: { xs: 0, sm: 2 },
+                "& .MuiTab-root": { 
+                  textTransform: "none", 
+                  fontWeight: 600, 
+                  minHeight: 56,
+                  minWidth: { xs: "auto", sm: 160 },
+                  px: { xs: 1.5, sm: 2 },
+                  fontSize: { xs: 12, sm: 14 },
+                },
+                "& .MuiTabs-scrollButtons": {
+                  "&.Mui-disabled": { opacity: 0.3 },
+                },
               }}
             >
               <Tab
-                label={`Pre-Learning (${recommendations?.pre_learning?.length || 0})`}
-                icon={<MenuBookRoundedIcon sx={{ fontSize: 20 }} />}
+                label={<Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Pre-Learning ({recommendations?.pre_learning?.length || 0})</Box>}
+                icon={<MenuBookRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
                 iconPosition="start"
+                aria-label={`Pre-Learning (${recommendations?.pre_learning?.length || 0})`}
               />
               <Tab
-                label={`Post-Learning (${recommendations?.post_learning?.length || 0})`}
-                icon={<TrendingUpRoundedIcon sx={{ fontSize: 20 }} />}
+                label={<Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Post-Learning ({recommendations?.post_learning?.length || 0})</Box>}
+                icon={<TrendingUpRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
                 iconPosition="start"
+                aria-label={`Post-Learning (${recommendations?.post_learning?.length || 0})`}
               />
               <Tab
-                label={`Resources (${recommendations?.external_resources?.length || 0})`}
-                icon={<PlayCircleFilledRoundedIcon sx={{ fontSize: 20 }} />}
+                label={<Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Resources ({recommendations?.external_resources?.length || 0})</Box>}
+                icon={<PlayCircleFilledRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />}
                 iconPosition="start"
+                aria-label={`Resources (${recommendations?.external_resources?.length || 0})`}
               />
             </Tabs>
           </Card>
@@ -762,10 +798,10 @@ export default function LearnPage() {
           <AnimatePresence mode="wait">
             {activeTab === 0 && (
               <motion.div key="pre" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <Typography sx={{ color: "text.secondary", mb: 2, fontSize: 14 }}>
+                <Typography sx={{ color: "text.secondary", mb: 2, fontSize: { xs: 13, sm: 14 }, px: { xs: 1, sm: 0 } }}>
                   Papers and resources to study first for better understanding.
                 </Typography>
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" }, gap: 2 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, gap: { xs: 1.5, sm: 2 } }}>
                   {recommendations?.pre_learning?.map((resource, idx) => (
                     <ResourceCard key={idx} resource={resource} onView={setViewingResource} />
                   ))}
@@ -783,10 +819,10 @@ export default function LearnPage() {
 
             {activeTab === 1 && (
               <motion.div key="post" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <Typography sx={{ color: "text.secondary", mb: 2, fontSize: 14 }}>
+                <Typography sx={{ color: "text.secondary", mb: 2, fontSize: { xs: 13, sm: 14 }, px: { xs: 1, sm: 0 } }}>
                   Advanced papers that build upon or extend this work.
                 </Typography>
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "repeat(2, 1fr)" }, gap: 2 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, gap: { xs: 1.5, sm: 2 } }}>
                   {recommendations?.post_learning?.map((resource, idx) => (
                     <ResourceCard key={idx} resource={resource} onView={setViewingResource} />
                   ))}
@@ -804,10 +840,10 @@ export default function LearnPage() {
 
             {activeTab === 2 && (
               <motion.div key="external" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <Typography sx={{ color: "text.secondary", mb: 2, fontSize: 14 }}>
+                <Typography sx={{ color: "text.secondary", mb: 2, fontSize: { xs: 13, sm: 14 }, px: { xs: 1, sm: 0 } }}>
                   Tutorials, videos, and guides to help you learn related concepts.
                 </Typography>
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }, gap: 2 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }, gap: { xs: 1.5, sm: 2 } }}>
                   {recommendations?.external_resources?.map((resource, idx) => (
                     <ResourceCard key={idx} resource={resource} onView={setViewingResource} />
                   ))}

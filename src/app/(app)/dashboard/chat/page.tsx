@@ -106,21 +106,22 @@ const MessageBubble = memo(function MessageBubble({
         {!isUser && (
           <Avatar
             sx={{
-              width: 36,
-              height: 36,
+              width: { xs: 28, sm: 36 },
+              height: { xs: 28, sm: 36 },
               bgcolor: "primary.main",
               boxShadow: "0 2px 8px rgba(26,115,232,0.25)",
+              flexShrink: 0,
             }}
           >
-            <AutoAwesomeRoundedIcon sx={{ fontSize: 18 }} />
+            <AutoAwesomeRoundedIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
           </Avatar>
         )}
 
-        <Box sx={{ maxWidth: "75%" }}>
+        <Box sx={{ maxWidth: { xs: "85%", sm: "75%" }, minWidth: 0 }}>
           <Box
             sx={{
-              p: 2,
-              px: 2.5,
+              p: { xs: 1.5, sm: 2 },
+              px: { xs: 2, sm: 2.5 },
               borderRadius: isUser ? "20px 20px 4px 20px" : "20px 20px 20px 4px",
               bgcolor: isUser ? "primary.main" : "white",
               color: isUser ? "white" : "text.primary",
@@ -133,7 +134,7 @@ const MessageBubble = memo(function MessageBubble({
           >
             <Typography
               sx={{
-                fontSize: 15,
+                fontSize: { xs: 14, sm: 15 },
                 lineHeight: 1.7,
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
@@ -196,13 +197,14 @@ const MessageBubble = memo(function MessageBubble({
         {isUser && (
           <Avatar
             sx={{
-              width: 36,
-              height: 36,
+              width: { xs: 28, sm: 36 },
+              height: { xs: 28, sm: 36 },
               bgcolor: "rgba(0,0,0,0.08)",
               color: "text.secondary",
+              flexShrink: 0,
             }}
           >
-            <PersonRoundedIcon sx={{ fontSize: 18 }} />
+            <PersonRoundedIcon sx={{ fontSize: { xs: 14, sm: 18 } }} />
           </Avatar>
         )}
       </Stack>
@@ -236,38 +238,39 @@ const PaperSelector = memo(function PaperSelector({
       <Card
         elevation={0}
         sx={{
-          p: 2,
+          p: { xs: 1.5, sm: 2 },
           mb: 2,
           border: "1px solid rgba(0,0,0,0.06)",
           borderRadius: 3,
           bgcolor: "rgba(26,115,232,0.02)",
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
           <Box
             sx={{
-              width: 40,
-              height: 40,
+              width: { xs: 32, sm: 40 },
+              height: { xs: 32, sm: 40 },
               borderRadius: 2,
               bgcolor: "rgba(26,115,232,0.1)",
               display: "grid",
               placeItems: "center",
+              flexShrink: 0,
             }}
           >
-            <DescriptionRoundedIcon sx={{ color: "#1a73e8", fontSize: 20 }} />
+            <DescriptionRoundedIcon sx={{ color: "#1a73e8", fontSize: { xs: 16, sm: 20 } }} />
           </Box>
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+            <Typography sx={{ fontSize: { xs: 10, sm: 12 }, color: "text.secondary" }}>
               Chatting about
             </Typography>
-            <Typography sx={{ fontWeight: 600, fontSize: 14 }} noWrap>
+            <Typography sx={{ fontWeight: 600, fontSize: { xs: 12, sm: 14 } }} noWrap>
               {selectedPaper?.file_name?.replace(".pdf", "") || "Select a paper"}
             </Typography>
           </Box>
 
           {papers.length > 1 && (
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={0.5}>
               {/* Quick switch to next paper */}
               <Tooltip title="Quick switch to next paper">
                 <IconButton
@@ -278,7 +281,7 @@ const PaperSelector = memo(function PaperSelector({
                     "&:hover": { bgcolor: "rgba(0,0,0,0.08)" },
                   }}
                 >
-                  <SwapHorizRoundedIcon sx={{ fontSize: 20 }} />
+                  <SwapHorizRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                 </IconButton>
               </Tooltip>
 
@@ -287,20 +290,24 @@ const PaperSelector = memo(function PaperSelector({
                 size="small"
                 variant="outlined"
                 onClick={(e) => setAnchorEl(e.currentTarget)}
-                endIcon={<KeyboardArrowDownRoundedIcon />}
+                endIcon={<KeyboardArrowDownRoundedIcon sx={{ display: { xs: "none", sm: "block" } }} />}
                 sx={{
                   textTransform: "none",
                   fontWeight: 600,
                   borderRadius: 2,
                   borderColor: "rgba(26,115,232,0.3)",
                   color: "primary.main",
+                  fontSize: { xs: 11, sm: 14 },
+                  px: { xs: 1, sm: 2 },
+                  minWidth: { xs: "auto", sm: 120 },
                   "&:hover": {
                     borderColor: "primary.main",
                     bgcolor: "rgba(26,115,232,0.04)",
                   },
                 }}
               >
-                Select Paper
+                <Box component="span" sx={{ display: { xs: "none", sm: "inline" } }}>Select Paper</Box>
+                <Box component="span" sx={{ display: { xs: "inline", sm: "none" } }}>Change</Box>
               </Button>
             </Stack>
           )}
@@ -414,12 +421,12 @@ const SuggestedPrompts = memo(function SuggestedPrompts({
   return (
     <Box sx={{ mb: 3 }}>
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-        <LightbulbRoundedIcon sx={{ fontSize: 18, color: "warning.main" }} />
-        <Typography sx={{ fontSize: 13, color: "text.secondary", fontWeight: 500 }}>
+        <LightbulbRoundedIcon sx={{ fontSize: { xs: 16, sm: 18 }, color: "warning.main" }} />
+        <Typography sx={{ fontSize: { xs: 12, sm: 13 }, color: "text.secondary", fontWeight: 500 }}>
           Try asking...
         </Typography>
       </Stack>
-      <Stack direction="row" flexWrap="wrap" gap={1}>
+      <Stack direction="row" flexWrap="wrap" gap={{ xs: 0.75, sm: 1 }}>
         {suggestedPrompts.map((prompt) => (
           <Chip
             key={prompt}
@@ -427,8 +434,8 @@ const SuggestedPrompts = memo(function SuggestedPrompts({
             onClick={() => onSelect(prompt)}
             sx={{
               cursor: "pointer",
-              fontSize: 13,
-              height: 32,
+              fontSize: { xs: 11, sm: 13 },
+              height: { xs: 28, sm: 32 },
               bgcolor: "rgba(26,115,232,0.06)",
               border: "1px solid rgba(26,115,232,0.1)",
               "&:hover": {
