@@ -8,6 +8,7 @@ import {
   Drawer,
   IconButton,
   InputAdornment,
+  LinearProgress,
   List,
   ListItemButton,
   ListItemIcon,
@@ -15,12 +16,14 @@ import {
   Stack,
   TextField,
   Toolbar,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import NotificationsNoneRoundedIcon from "@mui/icons-material/NotificationsNoneRounded";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useMemo, useState } from "react";
 import { signOut } from "firebase/auth";
@@ -28,6 +31,7 @@ import { signOut } from "firebase/auth";
 import { dashboardNav } from "@/lib/dashboardNav";
 import useCurrentUser from "@/lib/auth/useCurrentUser";
 import { auth } from "@/lib/firebase";
+import { usePaperStore } from "@/lib/papers/paperStore";
 
 const SIDEBAR_W = 260;
 
@@ -56,6 +60,10 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
 
   const items = useMemo(() => dashboardNav, []);
   const user = useCurrentUser();
+  
+  // Global upload state
+  const { upload } = usePaperStore();
+  const { isUploading, progress, file: uploadingFile } = upload;
 
   const displayName = user?.displayName || "Your Account";
   const email = user?.email || "";
@@ -296,6 +304,48 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
             <Box sx={{ flex: 1 }} />
 
             <Stack direction="row" spacing={0.5} alignItems="center">
+              {/* Global Upload Progress Indicator */}
+              {isUploading && (
+                <Tooltip title={`Uploading: ${uploadingFile?.name || 'file'} (${Math.round(progress)}%)`}>
+                  <Box
+                    onClick={() => router.push("/dashboard/upload")}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: { xs: 0.5, sm: 1 },
+                      px: { xs: 1, sm: 1.5 },
+                      py: 0.75,
+                      borderRadius: 2,
+                      bgcolor: "rgba(26,115,232,0.08)",
+                      cursor: "pointer",
+                      mr: 1,
+                      "&:hover": {
+                        bgcolor: "rgba(26,115,232,0.12)",
+                      },
+                    }}
+                  >
+                    <CloudUploadRoundedIcon sx={{ fontSize: { xs: 16, sm: 18 }, color: "primary.main" }} />
+                    <Box sx={{ width: { xs: 50, sm: 80 } }}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={progress}
+                        sx={{
+                          height: 4,
+                          borderRadius: 2,
+                          bgcolor: "rgba(26,115,232,0.2)",
+                          "& .MuiLinearProgress-bar": {
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Box>
+                    <Typography sx={{ fontSize: { xs: 10, sm: 12 }, fontWeight: 600, color: "primary.main", minWidth: { xs: 24, sm: 32 } }}>
+                      {Math.round(progress)}%
+                    </Typography>
+                  </Box>
+                </Tooltip>
+              )}
+              
               <IconButton size="small" sx={{ color: "text.secondary" }}>
                 <NotificationsNoneRoundedIcon sx={{ fontSize: 22 }} />
               </IconButton>

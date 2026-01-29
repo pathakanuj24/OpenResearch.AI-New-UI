@@ -30,6 +30,7 @@ type Props = {
 };
 
 // Progress stages based on percentage
+// Upload: 0-30%, Processing: 30-50%, Analyzing: 50-95%, Finishing: 95-100%
 function getProgressStage(progress: number) {
   if (progress < 30) {
     return {
@@ -39,7 +40,7 @@ function getProgressStage(progress: number) {
       icon: CloudUploadRoundedIcon,
       color: "#1a73e8",
     };
-  } else if (progress < 60) {
+  } else if (progress < 50) {
     return {
       stage: 2,
       label: "Processing",
@@ -47,7 +48,7 @@ function getProgressStage(progress: number) {
       icon: DescriptionRoundedIcon,
       color: "#7c3aed",
     };
-  } else if (progress < 90) {
+  } else if (progress < 95) {
     return {
       stage: 3,
       label: "Analyzing",
@@ -359,24 +360,24 @@ export default function PaperUploader({
                   >
                     <Box
                       sx={{
-                        width: 72,
-                        height: 72,
-                        borderRadius: 4,
+                        width: { xs: 56, sm: 72 },
+                        height: { xs: 56, sm: 72 },
+                        borderRadius: { xs: 3, sm: 4 },
                         display: "grid",
                         placeItems: "center",
                         bgcolor: "rgba(26,115,232,0.08)",
                         color: "primary.main",
                       }}
                     >
-                      <UploadFileRoundedIcon sx={{ fontSize: 36 }} />
+                      <UploadFileRoundedIcon sx={{ fontSize: { xs: 28, sm: 36 } }} />
                     </Box>
                   </motion.div>
 
-                  <Box sx={{ textAlign: "center" }}>
-                    <Typography sx={{ fontWeight: 700, fontSize: 20, mb: 0.5 }}>
+                  <Box sx={{ textAlign: "center", px: { xs: 1, sm: 0 } }}>
+                    <Typography sx={{ fontWeight: 700, fontSize: { xs: 16, sm: 20 }, mb: 0.5 }}>
                       Drag & drop your PDF here
                     </Typography>
-                    <Typography sx={{ color: "text.secondary", fontSize: 15 }}>
+                    <Typography sx={{ color: "text.secondary", fontSize: { xs: 13, sm: 15 } }}>
                       or click to browse • PDF only • Up to 20MB
                     </Typography>
                   </Box>
@@ -414,29 +415,30 @@ export default function PaperUploader({
                             borderRadius: 3,
                             border: "1px solid rgba(26,115,232,0.2)",
                             bgcolor: "rgba(26,115,232,0.04)",
-                            p: 2,
+                            p: { xs: 1.5, sm: 2 },
                           }}
                         >
-                          <Stack direction="row" spacing={1.5} alignItems="center">
+                          <Stack direction="row" spacing={{ xs: 1, sm: 1.5 }} alignItems="center">
                             <Box
                               sx={{
-                                width: 44,
-                                height: 44,
+                                width: { xs: 36, sm: 44 },
+                                height: { xs: 36, sm: 44 },
                                 borderRadius: 2.5,
                                 display: "grid",
                                 placeItems: "center",
                                 bgcolor: "rgba(239,68,68,0.1)",
                                 color: "error.main",
+                                flexShrink: 0,
                               }}
                             >
-                              <PictureAsPdfRoundedIcon />
+                              <PictureAsPdfRoundedIcon sx={{ fontSize: { xs: 18, sm: 24 } }} />
                             </Box>
 
                             <Box sx={{ minWidth: 0, flex: 1 }}>
                               <Typography
                                 sx={{
                                   fontWeight: 600,
-                                  fontSize: 15,
+                                  fontSize: { xs: 13, sm: 15 },
                                   overflow: "hidden",
                                   textOverflow: "ellipsis",
                                   whiteSpace: "nowrap",
@@ -445,7 +447,7 @@ export default function PaperUploader({
                               >
                                 {fileMeta.name}
                               </Typography>
-                              <Typography sx={{ color: "text.secondary", fontSize: 13 }}>
+                              <Typography sx={{ color: "text.secondary", fontSize: { xs: 11, sm: 13 } }}>
                                 {fileMeta.sizeMB} MB • Ready to analyze
                               </Typography>
                             </Box>
@@ -454,9 +456,9 @@ export default function PaperUploader({
                               onClick={onClear}
                               disabled={isLoading}
                               size="small"
-                              sx={{ color: "text.secondary" }}
+                              sx={{ color: "text.secondary", minWidth: "auto", p: { xs: 0.5, sm: 1 } }}
                             >
-                              <CloseRoundedIcon sx={{ fontSize: 20 }} />
+                              <CloseRoundedIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                             </Button>
                           </Stack>
                         </Box>

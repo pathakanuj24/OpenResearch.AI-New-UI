@@ -17,7 +17,7 @@ export const dashboardNav: DashboardNavItem[] = [
   { label: "Upload Paper", href: "/dashboard/upload", icon: UploadFileRoundedIcon },
   { label: "Library", href: "/dashboard/library", icon: LibraryBooksRoundedIcon },
   { label: "AI Chat", href: "/dashboard/chat", icon: ChatRoundedIcon },
-  { label: "Learn", href: "/dashboard/learn", icon: SchoolRoundedIcon },
+  { label: "Resources", href: "/dashboard/learn", icon: SchoolRoundedIcon },
   { label: "Knowledge Graph", href: "/dashboard/graph", icon: HubRoundedIcon },
   { label: "My Profile", href: "/dashboard/profile", icon: AccountCircleRoundedIcon },
   { label: "Logout", icon: LogoutRoundedIcon, action: "logout" },

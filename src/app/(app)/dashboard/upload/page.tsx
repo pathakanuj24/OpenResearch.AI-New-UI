@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
 
 import PaperUploader from "@/components/upload/PaperUploader";
 import { analyzePaper } from "@/lib/api/papers";
@@ -11,27 +10,62 @@ import { usePaperStore } from "@/lib/papers/paperStore";
 
 export default function UploadPage() {
   const router = useRouter();
-  const setLastAnalyze = usePaperStore((s) => s.setLastAnalyze);
+  const uploadRef = useRef<Promise<void> | null>(null);
 
-  const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  // Use global store for upload state (persists across navigation)
+  const {
+    upload,
+    setUploadFile,
+    setUploadProgress,
+    setUploadError,
+    startUpload,
+    finishUpload,
+    resetUpload,
+    setLastAnalyze,
+  } = usePaperStore();
 
-  const upload = useMutation({
-    mutationFn: async () => {
-      if (!file) throw new Error("Please select a PDF");
-      setError(null);
-      setProgress(0);
-      return analyzePaper(file, (pct) => setProgress(pct));
-    },
-    onSuccess: (data) => {
+  const { file, progress, isUploading, error } = upload;
+
+  // Handle the upload process
+  const handleUpload = useCallback(async () => {
+    if (!file || isUploading) return;
+
+    const abortController = new AbortController();
+    startUpload(abortController);
+
+    try {
+      const data = await analyzePaper(
+        file,
+        (pct) => setUploadProgress(pct),
+        abortController.signal
+      );
+
+      finishUpload();
       setLastAnalyze(data);
-      router.push(`/dashboard/library/${data.file_hash}`);
-    },
-    onError: (e: any) => {
-      setError(e?.message || "Upload failed. Please try again.");
-    },
-  });
+      
+      // Small delay to show 100% completion
+      setTimeout(() => {
+        resetUpload();
+        router.push(`/dashboard/library/${data.file_hash}`);
+      }, 500);
+    } catch (e: any) {
+      // Don't show error if it was intentionally cancelled
+      if (e?.name === "CanceledError" || e?.name === "AbortError") {
+        return;
+      }
+      setUploadError(e?.message || "Upload failed. Please try again.");
+    }
+  }, [
+    file,
+    isUploading,
+    startUpload,
+    setUploadProgress,
+    finishUpload,
+    setLastAnalyze,
+    resetUpload,
+    setUploadError,
+    router,
+  ]);
 
   return (
     <Box
@@ -54,21 +88,13 @@ export default function UploadPage() {
         <PaperUploader
           file={file}
           error={error}
-          isLoading={upload.isPending}
+          isLoading={isUploading}
           progress={progress}
-          onPick={(f) => {
-            setError(null);
-            setFile(f);
-          }}
-          onClear={() => {
-            setError(null);
-            setProgress(0);
-            setFile(null);
-          }}
-          onUpload={() => upload.mutate()}
+          onPick={(f) => setUploadFile(f)}
+          onClear={() => resetUpload()}
+          onUpload={handleUpload}
         />
       </Box>
     </Box>
   );
-
 }
