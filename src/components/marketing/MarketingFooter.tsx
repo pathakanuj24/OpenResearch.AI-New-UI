@@ -1,11 +1,8 @@
 "use client";
 
-import { Box, Container, Divider, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Container, Divider, Stack, Typography } from "@mui/material";
 import Link from "next/link";
 import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import TwitterIcon from "@mui/icons-material/Twitter";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import { routes } from "@/lib/routes";
 
 const footerLinks = {
@@ -55,30 +52,10 @@ export default function MarketingFooter() {
                 OpenResearch
               </Typography>
             </Stack>
-            <Typography sx={{ color: "text.secondary", fontSize: 14, lineHeight: 1.7, mb: 2.5 }}>
+            <Typography sx={{ color: "text.secondary", fontSize: 14, lineHeight: 1.7 }}>
               AI-powered research assistant that helps you understand papers faster with summaries,
               glossaries, and intelligent chat.
             </Typography>
-            <Stack direction="row" spacing={0.5}>
-              <IconButton
-                size="small"
-                sx={{ color: "text.secondary", "&:hover": { color: "text.primary" } }}
-              >
-                <GitHubIcon sx={{ fontSize: 20 }} />
-              </IconButton>
-              <IconButton
-                size="small"
-                sx={{ color: "text.secondary", "&:hover": { color: "text.primary" } }}
-              >
-                <TwitterIcon sx={{ fontSize: 20 }} />
-              </IconButton>
-              <IconButton
-                size="small"
-                sx={{ color: "text.secondary", "&:hover": { color: "text.primary" } }}
-              >
-                <LinkedInIcon sx={{ fontSize: 20 }} />
-              </IconButton>
-            </Stack>
           </Box>
 
           {/* Links Sections */}
