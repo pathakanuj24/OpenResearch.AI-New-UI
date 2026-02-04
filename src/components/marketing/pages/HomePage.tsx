@@ -13,6 +13,7 @@ import SocialProof from "../ui/SocialProof";
 import StatsBand from "../ui/StatsBand";
 import ProductPreview from "../ui/ProductPreview";
 import Testimonials from "../ui/Testimonials";
+import DemoVideo from "../ui/DemoVideo";
 import { marketing } from "@/data/marketing";
 import { routes } from "@/lib/routes";
 
@@ -27,13 +28,52 @@ export default function HomePage() {
           title={marketing.hero.title}
           subtitle={marketing.hero.subtitle}
           primaryText="Get Started Free"
-          secondaryText="Watch Demo"
           onPrimary={() => router.push(routes.signup)}
-          onSecondary={() => router.push(routes.login)}
           badges={marketing.hero.badges}
         />
 
         <SocialProof items={["Research Clubs", "Masters Students", "AI Teams", "PhD Scholars"]} />
+      </Section>
+
+      {/* Demo Video Section */}
+      <Section>
+        <Box sx={{ textAlign: "center", mb: 5 }}>
+          <Chip
+            label="See It In Action"
+            size="small"
+            sx={{
+              mb: 2,
+              bgcolor: "rgba(239,68,68,0.08)",
+              color: "#ef4444",
+              fontWeight: 600,
+            }}
+          />
+          <Typography
+            variant="h2"
+            sx={{
+              fontSize: { xs: 28, md: 40 },
+              fontWeight: 800,
+              letterSpacing: "-0.02em",
+              mb: 1.5,
+            }}
+          >
+            Watch how it works
+          </Typography>
+          <Typography
+            sx={{
+              color: "text.secondary",
+              lineHeight: 1.7,
+              maxWidth: 600,
+              mx: "auto",
+              fontSize: { xs: 15, md: 17 },
+            }}
+          >
+            See how OpenResearch.AI transforms complex papers into clear, actionable insights in seconds.
+          </Typography>
+        </Box>
+        <DemoVideo
+          src="/product_demo_with_backgorundMusic.mp4"
+        />
       </Section>
 
       {/* Stats Section */}
