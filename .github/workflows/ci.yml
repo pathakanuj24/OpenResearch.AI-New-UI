@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    env:
+      # Public Firebase web config placeholders so static pages can prerender in CI.
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8001
+      NEXT_PUBLIC_FIREBASE_API_KEY: AIzaSyCI-placeholder-placeholder-placeholder
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci.firebaseapp.com
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ci
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ci.appspot.com
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "1"
+      NEXT_PUBLIC_FIREBASE_APP_ID: "1:1:web:1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit -p .
+      - name: Lint
+        run: npx eslint src
+      - name: Build
+        run: npm run build
