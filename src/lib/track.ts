@@ -1,5 +1,6 @@
 "use client";
 
+import { newRequestId } from "@/lib/api/errors";
 import { auth } from "@/lib/firebase";
 import { usePrefs } from "@/lib/prefs";
 
@@ -42,7 +43,7 @@ export async function flush(keepalive = false) {
     const token = await auth.currentUser.getIdToken();
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v2/me/events`, {
       method: "POST", keepalive,
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Request-ID": newRequestId() },
       body: JSON.stringify({ events: batch }),
     });
     if (res.status === 404 || res.status === 405) disabled = true; // endpoint not deployed yet
