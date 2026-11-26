@@ -1,8 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button, Topo } from "@/components/atlas";
+import { logger } from "@/lib/log";
 
-export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function RouteError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  useEffect(() => {
+    logger("app").error(`Page crashed: ${error.message}`, error, { source: "route-error", digest: error.digest });
+  }, [error]);
   return (
     <div className="relative grid min-h-dvh place-items-center overflow-hidden bg-bg px-5">
       <Topo seed="error" className="absolute inset-0 size-full text-line-2" opacity={0.7} />
