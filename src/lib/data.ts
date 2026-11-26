@@ -1,5 +1,7 @@
 "use client";
 
+import { toApiError } from "@/lib/api/errors";
+import { logger } from "@/lib/log";
 import { useMemo } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
@@ -13,7 +15,8 @@ import { memoryAPI, type PaperConcept } from "@/lib/api/memory";
 import type { ConceptState } from "@/components/atlas";
 import { track } from "@/lib/track";
 
-const isMissing = (e: unknown) => [404, 405].includes((e as { response?: { status?: number } })?.response?.status ?? 0);
+const log = logger("data");
+const isMissing = (e: unknown) => [404, 405].includes(toApiError(e).status ?? 0);
 
 // ---------------- library ----------------
 
@@ -242,7 +245,9 @@ export function useUpload() {
         });
         paperId = r.data.paper_id; jobId = r.data.job_id;
       } catch (e) {
-        if ((e as { response?: { status?: number } })?.response?.status !== 503) throw e;
+        const err = toApiError(e);
+        // 503 "unavailable" = this server has no graph ingestion; "starting" just means try again shortly.
+        if (err.status !== 503 || err.code === "starting") throw e;
         // Server without graph ingestion: fall back to the slower v1 analysis.
         const res = await analyzePaper(file, (pct) =>
           upsert(key, { progress: pct, status: pct < 30 ? "uploading" : "analysing", stage: pct < 30 ? "Uploading" : "Reading the paper" }));
@@ -254,9 +259,10 @@ export function useUpload() {
       if (!jobId) useJobs.getState().remove(key);
       return paperId;
     } catch (e: unknown) {
-      const detail = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-      upsert(key, { status: "failed", error: detail || "Upload failed. Check your connection and try again." });
-      toast.error(detail || "Upload failed.");
+      const err = toApiError(e);
+      log.error("Upload failed", err, { requestId: err.requestId, status: err.status });
+      upsert(key, { status: "failed", error: err.message });
+      toast.error(err.message);
       return null;
     }
   };

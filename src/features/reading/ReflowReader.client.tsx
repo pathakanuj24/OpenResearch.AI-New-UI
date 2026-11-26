@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils";
 import { findBlock, reflow, type Block, type PageText } from "./reflow";
 import { TermText } from "./PassageColumn";
 import { usePdfBytes } from "./usePdf";
+import { logger } from "@/lib/log";
+
+const log = logger("reflow");
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -59,7 +62,10 @@ export default function ReflowReader({ paperId, target, current, conceptNames, c
   useEffect(() => {
     if (!pdf.data || cache.has(paperId)) return;
     let alive = true;
-    extract(pdf.data).then((b) => { cache.set(paperId, b); if (alive) setBlocks(b); }).catch(() => alive && setFailed(true));
+    extract(pdf.data).then((b) => { cache.set(paperId, b); if (alive) setBlocks(b); }).catch((err) => {
+      log.error("Text extraction failed; falling back to the PDF view", err, { paperId });
+      if (alive) setFailed(true);
+    });
     return () => { alive = false; };
   }, [pdf.data, paperId]);
 

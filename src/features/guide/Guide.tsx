@@ -12,6 +12,10 @@ import type { ResearchMessage, SourceData } from "@/features/chat/types";
 import { useGuide } from "./store";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/track";
+import { ensureOk, newRequestId, toApiError } from "@/lib/api/errors";
+import { logger } from "@/lib/log";
+
+const log = logger("guide");
 
 export const SUGGESTIONS = ["What should I learn first?", "Explain the method in plain words", "How big is the effect?", "What are the limitations?"];
 
@@ -31,13 +35,18 @@ function prefetchSuggestions(paperId: string) {
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v2/chat`, {
-          method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Request-ID": newRequestId() },
           body: JSON.stringify({ id: `prefetch-${paperId}`, paperIds: [paperId],
             messages: [{ id: "q", role: "user", parts: [{ type: "text", text: q }] }] }),
         });
+        await ensureOk(res);
         const reader = res.body?.getReader();
         while (reader && !(await reader.read()).done) { /* drain */ }
-      } catch { return; }
+      } catch (err) {
+        const e = toApiError(err);
+        if (!e.isClientError) log.warn("Suggestion prefetch failed", e, { requestId: e.requestId, status: e.status });
+        return;
+      }
     }
   }, 2500);
 }
@@ -48,7 +57,9 @@ export function useResearchChat(paperId: string) {
     api: `${process.env.NEXT_PUBLIC_API_BASE_URL}/v2/chat`,
     headers: async (): Promise<Record<string, string>> => {
       const token = await auth.currentUser?.getIdToken();
-      return token ? { Authorization: `Bearer ${token}` } : {};
+      const h: Record<string, string> = { "X-Request-ID": newRequestId() };
+      if (token) h.Authorization = `Bearer ${token}`;
+      return h;
     },
     body: { paperIds: [paperId] },
   }), [paperId]);
@@ -56,7 +67,10 @@ export function useResearchChat(paperId: string) {
     if (typeof window === "undefined") return [];
     try { return JSON.parse(localStorage.getItem(storeKey(paperId)) ?? "[]"); } catch { return []; }
   });
-  const chat = useChat<ResearchMessage>({ id: `paper-${paperId}`, transport, messages: initial });
+  const chat = useChat<ResearchMessage>({
+    id: `paper-${paperId}`, transport, messages: initial,
+    onError: (err) => log.error("Guide stream failed", err, { source: "guide", paperId }),
+  });
   useEffect(() => { if (!initial.length) prefetchSuggestions(paperId); }, [paperId, initial.length]);
   useEffect(() => {
     if (chat.status !== "ready") return;
