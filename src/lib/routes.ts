@@ -7,5 +7,12 @@ export const routes = {
   login: "/login",
   signup: "/signup",
   forgotPassword: "/forgot-password",
-  dashboard: "/dashboard",
+  signedOut: "/signed-out",
+  today: "/today",
+  paper: (id: string, view?: "read" | "trail") => `/papers/${id}${view === "trail" ? "?view=trail" : ""}`,
+  resources: "/resources",
+  learning: "/learning",
+  settings: "/settings",
+  // kept for old imports
+  dashboard: "/today",
 };

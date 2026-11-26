@@ -1,148 +1,158 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "../styles/tokens.css";
 
-/* PDF Viewer Styles */
-.react-pdf__Page__canvas {
-  border-radius: 8px;
-}
+/* Dark mode follows the Atlas convention: data-theme on <html> (set by next-themes). */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-.react-pdf__Page__textContent,
-.react-pdf__Page__annotations {
-  border-radius: 8px;
-}
-
-/* Root variables */
+/* Same fonts as the tokens, self-hosted by next/font under generated family names. */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --display: var(--font-bricolage), system-ui, sans-serif;
+  --read: var(--font-literata), Georgia, serif;
+}
+
+/* shadcn/ui primitives read these names; they are aliases of Atlas tokens only. */
+:root {
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--moss);
+  --primary-foreground: var(--moss-ink);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-2);
+  --accent: var(--moss-soft);
+  --accent-foreground: var(--moss-text);
+  --destructive: var(--f-psy);
+  --border: var(--line);
+  --input: var(--line-2);
+  --ring: var(--moss);
+  --radius: var(--r-sm);
+}
+
+@theme inline {
+  /* Atlas tokens as utilities: bg-surface, text-ink-2, bg-moss, text-sun-ink, bg-f-econ … */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-moss: var(--moss);
+  --color-moss-ink: var(--moss-ink);
+  --color-moss-soft: var(--moss-soft);
+  --color-moss-text: var(--moss-text);
+  --color-sun: var(--sun);
+  --color-sun-soft: var(--sun-soft);
+  --color-sun-ink: var(--sun-ink);
+  --color-new: var(--new);
+  --color-new-soft: var(--new-soft);
+  --color-learning: var(--learning);
+  --color-learning-soft: var(--learning-soft);
+  --color-known: var(--known);
+  --color-known-soft: var(--known-soft);
+  --color-f-econ: var(--f-econ);
+  --color-f-bio: var(--f-bio);
+  --color-f-earth: var(--f-earth);
+  --color-f-hist: var(--f-hist);
+  --color-f-phys: var(--f-phys);
+  --color-f-law: var(--f-law);
+  --color-f-psy: var(--f-psy);
+  --color-f-none: var(--f-none);
+
+  /* shadcn aliases */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "SF Mono", Monaco, "Cascadia Code", monospace;
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-sm);
+  --radius-lg: var(--r);
+  --radius-xl: var(--r-lg);
+  --radius-2xl: var(--r-xl);
+  --radius-pill: var(--r-pill);
+
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
+
+  --font-display: var(--display);
+  --font-read: var(--read);
+  --font-sans: var(--display);
+  --font-serif: var(--read);
+
+  --ease-spring: var(--spring);
+  --ease-atlas: var(--ease);
 }
 
-/* Base styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.6;
-}
-
-/* Smooth transitions */
-a,
-button {
-  transition: all 0.15s ease;
-}
-
-/* Focus styles */
-:focus-visible {
-  outline: 2px solid rgba(26, 115, 232, 0.5);
-  outline-offset: 2px;
-}
-
-/* Selection */
-::selection {
-  background: rgba(26, 115, 232, 0.2);
-  color: inherit;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-/* Custom utility classes */
-.text-balance {
-  text-wrap: balance;
-}
-
-.gradient-text {
-  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Card hover effect */
-.card-hover {
-  transition: all 0.2s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-}
-
-/* Fade in animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+@layer base {
+  * { @apply border-line; }
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: var(--fs-body)/1.55 var(--display);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  :focus-visible { outline: 2.5px solid var(--moss); outline-offset: 2px; border-radius: 8px; }
+  ::selection { background: var(--sun-soft); color: var(--ink); }
+  h1, h2, h3, h4 { text-wrap: balance; }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease forwards;
+/* Reading text */
+.reading { font: 400 calc(var(--fs-reading) * var(--reading-scale, 1))/1.78 var(--read); max-width: 760px; }
+.answer { font: 400 16.5px/1.65 var(--read); }
+.answer > * + * { margin-top: .6em; }
+.answer ul { list-style: disc; padding-left: 1.2rem; }
+.answer ol { list-style: decimal; padding-left: 1.2rem; }
+.answer strong { font-weight: 600; }
+.answer code { font-family: ui-monospace, Menlo, monospace; font-size: .85em; background: var(--surface-2); padding: .1em .3em; border-radius: 4px; }
+
+/* Highlighted passage: sun-soft highlighter sweep */
+.psg { border-radius: var(--r-sm); background-image: linear-gradient(var(--sun-soft), var(--sun-soft));
+  background-size: 0% 100%; background-repeat: no-repeat; transition: background-size .9s var(--ease); }
+.psg.hit { background-size: 100% 100%; }
+
+/* PDF fallback text-layer highlight */
+.react-pdf__Page__textContent mark.cite-mark { background: var(--sun-soft); color: transparent; mix-blend-mode: multiply; border-radius: 2px; }
+
+/* Motion helpers */
+@keyframes pulse-dot { 50% { transform: scale(.5); } }
+@keyframes bob { 50% { transform: translateY(-4px); } }
+@keyframes draw { from { stroke-dashoffset: var(--len, 2000); } to { stroke-dashoffset: 0; } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes pop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes ink-in { 0% { transform: scale(1.4) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) rotate(-6deg); opacity: 1; } }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.animate-pop { animation: pop var(--t-med) var(--spring) both; }
+.shimmer { background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--surface) 70%, transparent) 50%, transparent 100%);
+  background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
+
+/* Reduce-motion preference set in Settings (in addition to the OS setting in tokens.css) */
+[data-reduce-motion=true] *, [data-reduce-motion=true] *::before, [data-reduce-motion=true] *::after {
+  animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important;
 }
 
-/* Slide up animation */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slideUp 0.4s ease forwards;
-}
-
-/* Loading skeleton */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 9px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-track { background: transparent; }

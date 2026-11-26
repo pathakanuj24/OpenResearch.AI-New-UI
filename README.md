@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenResearch frontend (Atlas)
 
-## Getting Started
+Next.js 16 (App Router), React 19, Tailwind 4, shadcn/ui primitives, TanStack Query, the Vercel AI SDK (`useChat`), and Firebase Auth.
+The visual direction is **Atlas**. Its spec is `../docs/redesign/standalone/OpenResearch-Atlas-Design-System.html`.
 
-First, run the development server:
+## Rules
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Colour:** use only the tokens in `src/styles/tokens.css`, copied verbatim from the spec. Tailwind utilities are named
+  after them: `bg-moss`, `text-ink-2`, `bg-sun-soft`, `text-known`, `bg-f-econ` and so on. No raw colours.
+- **Fonts:** **Bricolage Grotesque** for the interface (`font-display`) and **Literata** for reading text (`font-read`,
+  `.reading`, `.answer`).
+- **Moss** is the only action colour. **Sun** is only for citation pins, highlighted passages and "you are here".
+- WCAG 2.2 AA in both themes. Theme comes from `data-theme` on `<html>` via next-themes; system is the default.
+
+## Structure
+
+```
+src/app/(site)        public site: /, /features, /how-it-works, /about, /contact
+src/app/(auth)        /login, /signup, /forgot-password   (+ /signed-out)
+src/app/(app)         signed-in app: /today, /papers/[id] (Read · Trail · Guide), /resources, /learning, /settings
+src/components/atlas  design-system components (Button, ConceptChip, CitePin, Term, Segmented, Toggle, TextField,
+                      Topo, MiniTrail, FieldCover, ProgressRing, Steps, Stamp, ResourceCard)
+src/components/app    app shell (nav pill, ⌘K palette, account menu, mobile bar, drop-anywhere upload)
+src/features/*        screens: today, reading, guide, trail, resources, learning, settings, auth
+src/lib/data.ts       React Query hooks for every backend call, plus uploads and job polling
+src/lib/trail.ts      trail model (stops, "you are here", blocking concept)
+src/lib/prefs.ts      browser-local preferences (until the backend stores them)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+All data comes from the backend; nothing is mocked. The endpoints used, and the ones still missing (each with the
+fallback the UI uses meanwhile), are listed in `../docs/frontend-api-contract.md`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Run
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cp .env.local.example .env.local   # if missing: NEXT_PUBLIC_API_BASE_URL + the Firebase web config
+npm install
+npm run dev                        # http://localhost:3000 (backend on :8001)
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Checks: `npx tsc --noEmit -p . && npx eslint src && npm run build`.
