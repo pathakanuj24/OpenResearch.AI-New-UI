@@ -21,6 +21,7 @@ import { usePrefs } from "@/lib/prefs";
 import { useReadProgress } from "./progress";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/track";
+import { ErrorBoundary } from "@/components/app/ErrorBoundary";
 
 const PdfColumn = dynamic(() => import("./PdfColumn.client"), { ssr: false });
 const ReflowReader = dynamic(() => import("./ReflowReader.client"), { ssr: false });
@@ -115,7 +116,11 @@ export function PaperScreen({ id }: { id: string }) {
   const ds = analysis.data?.analysis?.document_summary;
   const title: string = ds?.title || stats.data?.title || analysis.data?.file_name?.replace(/\.pdf$/i, "") || "Paper";
   const field = stats.data?.field ?? null;
-  const guide = <Guide paperId={id} paperTitle={title} chat={chat} onCite={onCite} conceptState={conceptState} onConcept={onConcept} onClose={() => setOpen(false)} className="h-full" />;
+  const guide = (
+    <ErrorBoundary area="the guide" resetKeys={[id]} className="m-4">
+      <Guide paperId={id} paperTitle={title} chat={chat} onCite={onCite} conceptState={conceptState} onConcept={onConcept} onClose={() => setOpen(false)} className="h-full" />
+    </ErrorBoundary>
+  );
 
   return (
     <div>
@@ -170,6 +175,7 @@ export function PaperScreen({ id }: { id: string }) {
               ) : null}
 
               <div ref={column} className="mt-4">
+                <ErrorBoundary area="the reading view" resetKeys={[id, readerMode]} className="mt-8">
                 {passages.isLoading ? <div className="space-y-3 pt-8">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}</div>
                   : passages.data?.sections.length ? (
                     <PassageColumn sections={passages.data.sections} current={section} target={passageTarget}
@@ -180,6 +186,7 @@ export function PaperScreen({ id }: { id: string }) {
                   ) : (
                     <div className="pt-6"><PdfColumn paperId={id} target={pdfTarget} /></div>
                   )}
+                </ErrorBoundary>
               </div>
               <Extras analysis={analysis.data?.analysis} />
             </article>
