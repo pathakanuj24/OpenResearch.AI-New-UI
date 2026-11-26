@@ -1,6 +1,7 @@
 import { api } from "./client";
 
 export type AnalyzeResponse = {
+  graph_job_id?: string; // v2 graph ingestion job (GET /v2/jobs/{id})
   file_name: string;
   file_hash: string;
   cache_used?: boolean;

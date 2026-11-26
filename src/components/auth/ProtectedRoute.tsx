@@ -1,71 +1,30 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Box, CircularProgress, Typography, Stack } from "@mui/material";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth/authStore";
 import { routes } from "@/lib/routes";
+import { LogoMark } from "@/components/atlas";
 
-type ProtectedRouteProps = {
-  children: React.ReactNode;
-};
+export function FullScreenLoader({ label = "Loading…" }: { label?: string }) {
+  return (
+    <div className="grid min-h-dvh place-items-center bg-bg" role="status" aria-live="polite">
+      <div className="flex flex-col items-center gap-3 text-ink-3">
+        <LogoMark className="animate-pulse" />
+        <span className="text-sm">{label}</span>
+      </div>
+    </div>
+  );
+}
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const loading = useAuthStore((s) => s.loading);
-
   useEffect(() => {
-    // Only redirect after auth state is determined (not loading)
-    if (!loading && !user) {
-      router.replace(routes.login);
-    }
-  }, [user, loading, router]);
-
-  // Show loading state while checking auth
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          bgcolor: "#fafafa",
-        }}
-      >
-        <Stack spacing={2} alignItems="center">
-          <CircularProgress size={40} sx={{ color: "#1a73e8" }} />
-          <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
-            Loading...
-          </Typography>
-        </Stack>
-      </Box>
-    );
-  }
-
-  // Don't render children if not authenticated (redirect is in progress)
-  if (!user) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          bgcolor: "#fafafa",
-        }}
-      >
-        <Stack spacing={2} alignItems="center">
-          <CircularProgress size={40} sx={{ color: "#1a73e8" }} />
-          <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
-            Redirecting to login...
-          </Typography>
-        </Stack>
-      </Box>
-    );
-  }
-
-  // User is authenticated, render children
+    if (!loading && !user) router.replace(`${routes.login}?next=${encodeURIComponent(pathname)}`);
+  }, [user, loading, router, pathname]);
+  if (loading || !user) return <FullScreenLoader label={loading ? "Loading…" : "Taking you to sign in…"} />;
   return <>{children}</>;
 }
