@@ -239,6 +239,23 @@ export const useJobs = create<JobsState>()(
   ),
 );
 
+export type Usage = { tokens_today: number; daily_budget: number; papers?: number; paper_limit?: number };
+
+/** Same wording as the server's paper_limit error. */
+export function libraryFullMessage(count: number, limit: number) {
+  const over = count - limit + 1;
+  return over <= 1
+    ? `Your library is full (${count} of ${limit} papers). Delete a paper to add another.`
+    : `Your library has ${count} papers and the limit is ${limit}. Delete ${over} papers to add another.`;
+}
+
+/** How many papers the reader has and may keep (the server enforces the limit; this is for display). */
+export function usePaperQuota() {
+  const q = useQuery({ queryKey: ["usage"], queryFn: async () => (await api.get<Usage>("/v2/me/usage")).data, staleTime: 30_000 });
+  const count = q.data?.papers, limit = q.data?.paper_limit;
+  return { count, limit, full: count != null && limit != null && count >= limit };
+}
+
 /** Upload a PDF: analysis (v1) + graph mapping (v2 job). Keeps running across navigation. */
 export function useUpload() {
   const qc = useQueryClient();
@@ -246,6 +263,11 @@ export function useUpload() {
   return async (file: File) => {
     if (file.type !== "application/pdf") { toast.error("That isn't a PDF. Choose a PDF file."); return null; }
     if (file.size > 50 * 1024 * 1024) { toast.error("That PDF is over 50 MB. Try a smaller file."); return null; }
+    const usage = qc.getQueryData<Usage>(["usage"]);
+    if (usage?.papers != null && usage.paper_limit != null && usage.papers >= usage.paper_limit) {
+      toast.error(libraryFullMessage(usage.papers, usage.paper_limit));
+      return null;
+    }
     const key = `${file.name}-${Date.now()}`;
     upsert(key, { fileName: file.name, status: "uploading", progress: 0, stage: "Uploading" });
     try {
@@ -270,6 +292,7 @@ export function useUpload() {
       upsert(key, { paperId, jobId, status: jobId ? "mapping" : "done", progress: 0, stage: "Queued" });
       qc.invalidateQueries({ queryKey: ["analyses"] });
       qc.invalidateQueries({ queryKey: ["library-v2"] });
+      qc.invalidateQueries({ queryKey: ["usage"] });
       if (!jobId) useJobs.getState().remove(key);
       return paperId;
     } catch (e: unknown) {
@@ -354,7 +377,7 @@ export function useDeletePaper() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteAnalysis(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["analyses"] }); qc.invalidateQueries({ queryKey: ["library-v2"] }); toast("Paper deleted."); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["analyses"] }); qc.invalidateQueries({ queryKey: ["library-v2"] }); qc.invalidateQueries({ queryKey: ["usage"] }); toast("Paper deleted."); },
     onError: () => toast.error("Couldn't delete the paper."),
   });
 }

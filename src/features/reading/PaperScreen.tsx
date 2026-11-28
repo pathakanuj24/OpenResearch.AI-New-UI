@@ -137,7 +137,7 @@ export function PaperScreen({ id }: { id: string }) {
   const title: string = ds?.title || stats.data?.title || analysis.data?.file_name?.replace(/\.pdf$/i, "") || "Paper";
   const field = stats.data?.field ?? null;
   const guide = (
-    <ErrorBoundary area="the guide" resetKeys={[id]} className="m-4">
+    <ErrorBoundary area="Iris" resetKeys={[id]} className="m-4">
       <Guide paperId={id} paperTitle={title} chat={chat} onCite={onCite} conceptState={conceptState} onConcept={onConcept} onClose={() => setOpen(false)} className="h-full" />
     </ErrorBoundary>
   );
@@ -158,7 +158,7 @@ export function PaperScreen({ id }: { id: string }) {
           ) : null}
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden items-center gap-2 text-[13px] text-ink-2 sm:flex"><ProgressRing value={progress} label="Read so far" /> {Math.round(progress * 100)}% read</span>
-            <Button size="sm" variant={open ? "pri" : "sec"} onClick={() => setOpen(!open)} aria-pressed={open} className="max-sm:w-[34px] max-sm:px-0"><Sparkles aria-hidden /><span className="max-sm:sr-only">Guide</span></Button>
+            <Button size="sm" variant={open ? "pri" : "sec"} onClick={() => setOpen(!open)} aria-pressed={open} className="max-sm:w-[34px] max-sm:px-0"><Sparkles aria-hidden /><span className="max-sm:sr-only">Iris</span></Button>
           </div>
         </div>
       </div>
@@ -234,7 +234,7 @@ export function PaperScreen({ id }: { id: string }) {
       {!isDesktop ? (
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetContent side="bottom" className="h-[82vh] rounded-t-[28px] p-0 [&>button]:hidden">
-            <SheetTitle className="sr-only">Guide</SheetTitle>
+            <SheetTitle className="sr-only">Iris</SheetTitle>
             {guide}
           </SheetContent>
         </Sheet>
@@ -252,7 +252,7 @@ function AskBar({ onAsk, waiting }: { onAsk: (q: string) => void; waiting?: bool
       <div className="pointer-events-none fixed inset-x-0 bottom-24 z-30 flex justify-center px-4 md:bottom-5">
         <p className="pointer-events-auto flex items-center gap-2.5 rounded-pill border border-line bg-surface px-4 py-2.5 text-sm text-ink-2 shadow-2" aria-live="polite">
           <span className="size-2 rounded-full bg-sun" style={{ animation: "pulse-dot .9s infinite" }} />
-          The guide will be ready when the paper is mapped. You can read the PDF meanwhile.
+          Iris will be ready when the paper is mapped. You can read the PDF meanwhile.
         </p>
       </div>
     );
@@ -271,7 +271,7 @@ function AskBar({ onAsk, waiting }: { onAsk: (q: string) => void; waiting?: bool
       <form onSubmit={(e) => { e.preventDefault(); if (q.trim()) { onAsk(q.trim()); setQ(""); } }}
         className="pointer-events-auto flex w-full max-w-[640px] items-center gap-2 rounded-pill border border-line bg-surface p-1.5 pl-2 shadow-2 focus-within:border-moss">
         <span className="size-9 shrink-0 rounded-full bg-[radial-gradient(circle_at_35%_35%,var(--sun),var(--moss))]" aria-hidden />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask the guide about this paper…" aria-label="Ask the guide about this paper"
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask Iris about this paper…" aria-label="Ask Iris about this paper"
           className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-3" />
         <button type="submit" disabled={!q.trim()} aria-label="Ask" className="grid size-9 place-items-center rounded-full bg-moss text-moss-ink transition-opacity disabled:opacity-40"><ArrowUp className="size-4" /></button>
       </form>
@@ -287,8 +287,8 @@ function NotMappedBanner({ id, title, show }: { id: string; title: string; show:
   return (
     <div className="mb-5 flex flex-wrap items-center gap-3 rounded-[var(--r)] border border-line bg-sun-soft px-4 py-3 text-ink">
       <p className="flex-1 text-sm">
-        {job ? <>Mapping this paper{job.stage ? `: ${job.stage}` : "…"} The guide and trail will work once it&apos;s done.</>
-          : <>This paper isn&apos;t mapped yet, so the guide can&apos;t cite passages and there&apos;s no trail. Mapping takes about a minute.</>}
+        {job ? <>Mapping this paper{job.stage ? `: ${job.stage}` : "…"} Iris and the trail will work once it&apos;s done.</>
+          : <>This paper isn&apos;t mapped yet, so Iris can&apos;t cite passages and there&apos;s no trail. Mapping takes about a minute.</>}
       </p>
       {!job ? <Button size="sm" variant="pri" loading={reingest.isPending} onClick={() => reingest.mutate({ id, title })}><RefreshCw /> Map this paper</Button> : null}
     </div>

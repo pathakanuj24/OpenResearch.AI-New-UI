@@ -16,7 +16,7 @@ export function MarginPin({ refs }: { refs: CitedRef[] }) {
     <span className="relative mr-1.5 inline-block align-[1px] lg:absolute lg:-left-11 lg:top-1.5 lg:mr-0">
       {/* The pin is 22px; the invisible ::before makes the tap target 44px. */}
       <CitePin n={latest.n} onClick={() => showAnswer(latest.messageId)} className="relative before:absolute before:-inset-[11px] before:content-['']"
-        label={`Cited in ${answers === 1 ? "an answer" : `${answers} answers`}. Show ${answers === 1 ? "it" : "the latest"} in the guide`}
+        label={`Cited in ${answers === 1 ? "an answer" : `${answers} answers`}. Show ${answers === 1 ? "it" : "the latest"} in Iris`}
         hint={`${latest.source.section ? `${latest.source.section} · ` : ""}p. ${latest.source.page}`} />
       {answers > 1 ? (
         <span aria-hidden className="absolute -right-1.5 -top-1.5 grid min-w-4 place-items-center rounded-pill bg-ink px-1 font-display text-[10px] font-bold leading-4 text-bg">

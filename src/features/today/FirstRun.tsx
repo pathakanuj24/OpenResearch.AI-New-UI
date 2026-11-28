@@ -34,7 +34,7 @@ export function FirstRun() {
             <p className="text-[13px] font-semibold text-ink-3">Welcome{user?.displayName ? `, ${user.displayName.split(" ")[0]}` : ""}</p>
             <h1 className="mt-2 text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] md:text-[46px]">Let&apos;s map your first paper.</h1>
             <p className="mt-3 max-w-[46ch] text-[17px] text-ink-2">
-              Upload the paper you&apos;re stuck on. In about a minute you&apos;ll have a guide, cited answers and a trail of what to learn first.
+              Upload the paper you&apos;re stuck on. In about a minute you&apos;ll have Iris, cited answers and a trail of what to learn first.
             </p>
             <ol className="mt-6 space-y-2">
               {steps.map((s, i) => {

@@ -248,14 +248,14 @@ function ConceptCard({ card, paper, actions }: { card: Card; paper: { id: string
       {more ? (
         <div className="mt-2 grid gap-1.5 animate-enter">
           {extra.isLoading ? <Skeleton className="h-12" /> : uniqueByTitle(extra.data ?? [], card.resource).slice(0, 4).map((r) => <ResourceRow key={r.url} r={r} />)}
-          {extra.isFetched && !(extra.data ?? []).length ? <p className="text-[12.5px] text-ink-3">No more resources found. Ask the guide to explain it from the paper.</p> : null}
+          {extra.isFetched && !(extra.data ?? []).length ? <p className="text-[12.5px] text-ink-3">No more resources found. Ask Iris to explain it from the paper.</p> : null}
         </div>
       ) : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-1 border-t border-line pt-2.5">
         <button type="button" onClick={() => router.push(`/papers/${paper.id}?ask=${encodeURIComponent(`Explain ${card.name} using this paper`)}`)}
           className="inline-flex h-8 items-center gap-1.5 rounded-pill px-2.5 text-[12.5px] font-semibold text-moss-text hover:bg-moss-soft">
-          <Sparkles className="size-3.5" aria-hidden />Ask the guide
+          <Sparkles className="size-3.5" aria-hidden />Ask Iris
         </button>
         <button type="button" onClick={() => setMore((m) => !m)} aria-expanded={more}
           className="ml-auto inline-flex h-8 items-center gap-1 rounded-pill px-2.5 text-[12.5px] font-semibold text-ink-2 hover:bg-surface-2 hover:text-ink">

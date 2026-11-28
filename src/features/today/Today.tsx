@@ -8,7 +8,7 @@ import { AlertTriangle, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Button, Card, Eyebrow, FieldCover, MiniTrail, ProgressRing, Topo } from "@/components/atlas";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/lib/auth/authStore";
-import { useDeletePaper, useJobs, useLastPaper, useLibrary, useMap, useMemory, usePaperResources, useReingest, useUpload, type ShelfPaper } from "@/lib/data";
+import { useDeletePaper, useJobs, useLastPaper, useLibrary, useMap, libraryFullMessage, useMemory, usePaperQuota, usePaperResources, useReingest, useUpload, type ShelfPaper } from "@/lib/data";
 import { FIELD_LABEL, fieldKey, fieldVar, type FieldKey } from "@/lib/fields";
 import { blockingConcept, buildTrail, shortTitle, unlocks } from "@/lib/trail";
 import { cn } from "@/lib/utils";
@@ -59,10 +59,10 @@ function Hero({ paper }: { paper: ShelfPaper }) {
               <>
                 <b>{block.name}</b>
                 {unlocked.length ? <> unlocks {unlocked.slice(0, 2).join(" and ")}</> : null} in <i className="font-read">{title}</i>.
-                {" "}Ask the guide to explain it from the paper, then carry on reading.
+                {" "}Ask Iris to explain it from the paper, then carry on reading.
               </>
-            ) : isLoading ? "Loading your trail…" : map ? <>Every concept this paper needs is stamped. Read <i className="font-read">{title}</i> with the guide.</>
-              : <>Open <i className="font-read">{title}</i> and ask the guide anything. Every answer cites the passage.</>}
+            ) : isLoading ? "Loading your trail…" : map ? <>Every concept this paper needs is stamped. Read <i className="font-read">{title}</i> with Iris.</>
+              : <>Open <i className="font-read">{title}</i> and ask Iris anything. Every answer cites the passage.</>}
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <Button variant="sun" asChild>
@@ -90,7 +90,7 @@ function ProcessingHero({ papers }: { papers: ShelfPaper[] }) {
         </h1>
         <p className="mt-3 text-[16.5px] opacity-90">
           {busy ? <>We&apos;re splitting <i className="font-read">{busy.title}</i> into passages, finding its concepts and linking its references. This takes about a minute.</>
-            : "Your papers below aren't mapped yet. Map one to get a guide, cited answers and a trail."}
+            : "Your papers below aren't mapped yet. Map one to get Iris, cited answers and a trail."}
         </p>
       </div>
     </section>
@@ -101,6 +101,7 @@ function Tiles({ paperId }: { paperId?: string }) {
   const memory = useMemory();
   const resources = usePaperResources(paperId, 2);
   const upload = useUpload();
+  const quota = usePaperQuota();
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [weekAgo] = useState(() => Date.now() - 7 * 864e5);
@@ -131,14 +132,17 @@ function Tiles({ paperId }: { paperId?: string }) {
       <button type="button" onClick={() => input.current?.click()} className="rounded-xl border border-line bg-surface p-5 text-left shadow-1 transition-[transform,box-shadow] duration-[var(--t-med)] ease-spring hover:-translate-y-1 hover:shadow-2">
         <input ref={input} type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f).then((id) => { if (id) router.push(`/papers/${id}`); }); e.target.value = ""; }} />
         <Eyebrow>Any field, any PDF</Eyebrow>
-        <p className="text-[17px] font-semibold">Add a paper</p>
-        <p className="text-sm text-ink-2">Drop a PDF anywhere on this page. We&apos;ll map it in about a minute.</p>
+        <p className="text-[17px] font-semibold">{quota.full ? "Library full" : "Add a paper"}</p>
+        <p className="text-sm text-ink-2">{quota.full
+          ? libraryFullMessage(quota.count!, quota.limit!)
+          : <>Drop a PDF anywhere on this page. We&apos;ll map it in about a minute.{quota.limit != null && quota.count != null ? ` ${quota.limit - quota.count} of ${quota.limit} left.` : ""}</>}</p>
       </button>
     </div>
   );
 }
 
 function Shelf({ papers }: { papers: ShelfPaper[] }) {
+  const quota = usePaperQuota();
   const [filter, setFilter] = useState<FieldKey | "all">("all");
   const fields = useMemo(() => {
     const m = new Map<FieldKey, number>();
@@ -151,7 +155,7 @@ function Shelf({ papers }: { papers: ShelfPaper[] }) {
     <section className="pt-8">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Eyebrow>Your library</Eyebrow>
+          <Eyebrow>Your library{quota.limit != null ? ` · ${quota.count ?? papers.length} of ${quota.limit} papers` : ""}</Eyebrow>
           <h2 className="text-[28px] font-semibold tracking-[-0.03em]">
             {n > 1 ? `${["", "", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"][n] ?? n} fields, one shelf` : `${papers.length} paper${papers.length === 1 ? "" : "s"} on your shelf`}
           </h2>
@@ -240,6 +244,7 @@ function PaperCard({ p }: { p: ShelfPaper }) {
 
 function AddCard() {
   const upload = useUpload();
+  const quota = usePaperQuota();
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   return (
@@ -247,8 +252,8 @@ function AddCard() {
       className="flex min-h-[260px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-line-2 text-center transition-colors hover:border-moss hover:bg-moss-soft/40">
       <input ref={input} type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f).then((id) => { if (id) router.push(`/papers/${id}`); }); e.target.value = ""; }} />
       <span className="grid size-14 place-items-center rounded-[18px] bg-moss-soft text-moss-text"><Plus className="size-6" /></span>
-      <span className="font-semibold">Add a paper</span>
-      <span className="text-[13px] text-ink-3">or drop a PDF anywhere</span>
+      <span className="font-semibold">{quota.full ? "Library full" : "Add a paper"}</span>
+      <span className="text-[13px] text-ink-3">{quota.full ? libraryFullMessage(quota.count!, quota.limit!) : "or drop a PDF anywhere"}</span>
     </button>
   );
 }

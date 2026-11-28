@@ -150,7 +150,7 @@ function MobileBar({ pathname, lastPaper }: { pathname: string; lastPaper?: stri
     <nav aria-label="Main" className="fixed inset-x-3 bottom-3 z-40 flex items-center rounded-[22px] border border-line bg-surface/95 px-1.5 py-1 shadow-2 backdrop-blur md:hidden">
       <Link href="/today" className={cn(item, active === "today" ? "text-moss-text" : "text-ink-3")}><House className="size-5" />Today</Link>
       <Link href={paperHref} className={cn(item, active === "reading" && !pathname.includes("view=trail") ? "text-moss-text" : "text-ink-3")}><BookOpen className="size-5" />Read</Link>
-      <button type="button" aria-label="Ask the guide" onClick={() => { if (!pathname.startsWith("/papers")) router.push(`${paperHref}?guide=1`); ask(true); }}
+      <button type="button" aria-label="Ask Iris" onClick={() => { if (!pathname.startsWith("/papers")) router.push(`${paperHref}?guide=1`); ask(true); }}
         className="mx-1 grid size-12 -translate-y-3 place-items-center rounded-full bg-moss text-moss-ink shadow-2">
         <Sparkles className="size-5" />
       </button>

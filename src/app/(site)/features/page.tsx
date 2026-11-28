@@ -5,9 +5,9 @@ export const metadata = { title: "Features" };
 
 const FEATURES = [
   [BookOpen, "A calm reading view", "The paper in a comfortable reading font, with the concepts you don't know yet marked and defined in place."],
-  [MessageCircleQuestion, "A guide that shows its work", "Ask anything. The guide searches the paper, checks what you know and looks up references, and you can see each step."],
+  [MessageCircleQuestion, "Iris shows its work", "Ask anything. Iris searches the paper, checks what you know and looks up references, and you can see each step."],
   [Route, "Your trail", "Prerequisites in the order they build on each other, this paper, then the most-cited work that came after."],
-  [Brain, "Memory you control", "Mark concepts new, learning or known. The guide adapts; you can see, change or erase everything it keeps."],
+  [Brain, "Memory you control", "Mark concepts new, learning or known. Iris adapts; you can see, change or erase everything it keeps."],
   [Library, "Resources with reasons", "Videos, articles and reviews for the concept in your way, each with its source and why it was picked."],
   [ShieldCheck, "Private by default", "Your papers and notes are visible only to you. Delete a paper or your whole account at any time."],
 ] as const;

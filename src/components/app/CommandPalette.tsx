@@ -37,14 +37,14 @@ export function CommandPalette({ open, onOpenChange, onUpload }: {
   const readyPapers = (papers ?? []).filter((p) => p.status !== "processing");
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} title="Search" description="Search papers, concepts, or ask the guide">
+    <CommandDialog open={open} onOpenChange={onOpenChange} title="Search" description="Search papers, concepts, or ask Iris">
       <CommandInput placeholder="Search papers, concepts, or ask…" value={query} onValueChange={setQuery} />
       <CommandList>
-        <CommandEmpty>Nothing matches. Press Enter on “Ask the guide” to ask instead.</CommandEmpty>
+        <CommandEmpty>Nothing matches. Press Enter on “Ask Iris” to ask instead.</CommandEmpty>
         {query.trim().length > 3 && last ? (
           <CommandGroup heading="Ask">
             <CommandItem value={`ask ${query}`} onSelect={() => run(() => { track({ type: "search", value: query.trim(), meta: { as: "question" } }); ask(query.trim()); router.push(`/papers/${last}?guide=1`); })}>
-              <MessageCircleQuestion /> Ask the guide: “{query.trim()}”
+              <MessageCircleQuestion /> Ask Iris: “{query.trim()}”
             </CommandItem>
           </CommandGroup>
         ) : null}

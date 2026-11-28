@@ -4,8 +4,8 @@ export const metadata = { title: "How it works" };
 
 const DETAIL = [
   ["1 · We map the paper", "Your PDF is split into sections and passages. We identify its field, pick out the concepts it uses and introduces, work out which concepts build on which, and link its references to the scholarly record (OpenAlex and Crossref)."],
-  ["2 · You read with a guide", "Ask a question and the guide searches the paper's passages by meaning and by exact terms, follows the concept graph, and answers only from what it finds. Every claim gets a sun-yellow pin; click it and the paper scrolls to the passage and highlights it."],
-  ["3 · You follow your trail", "The trail orders what to learn before the paper and shows the work that built on it. Mark concepts as known and they disappear from the trail, the guide skips them, and resources focus on what's left."],
+  ["2 · You read with Iris", "Ask a question and Iris searches the paper's passages by meaning and by exact terms, follows the concept graph, and answers only from what it finds. Every claim gets a sun-yellow pin; click it and the paper scrolls to the passage and highlights it."],
+  ["3 · You follow your trail", "The trail orders what to learn before the paper and shows the work that built on it. Mark concepts as known and they disappear from the trail, Iris skips them, and resources focus on what's left."],
 ] as const;
 
 export default function HowItWorks() {

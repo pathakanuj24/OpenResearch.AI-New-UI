@@ -62,6 +62,38 @@ function Pattern({ k, seed, color }: { k: FieldKey; seed: string; color: string 
       return (<g fill="none" stroke={color} strokeWidth="1.6">{Array.from({ length: 8 }, (_, i) => (
         <circle key={i} cx={cx} cy="66" r={8 + i * 13} opacity={1 - i * 0.1} />))}</g>);
     }
+    case "ai": {
+      // A small neural network: three layers of nodes, every node linked to the next layer.
+      const layers = [3, 5, 4].map((n, li) => Array.from({ length: n }, (_, i) => ({ x: 60 + li * 80 + r() * 8, y: 66 + (i - (n - 1) / 2) * 24 })));
+      return (<g>{layers.slice(0, -1).flatMap((layer, li) => layer.flatMap((a, i) => layers[li + 1].map((b, j) => (
+        <line key={`${li}-${i}-${j}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={color} strokeOpacity={0.15 + r() * 0.3} strokeWidth="1.4" />))))}
+        {layers.flat().map((n, i) => <circle key={i} cx={n.x} cy={n.y} r="6" fill={color} opacity={0.55 + r() * 0.4} />)}</g>);
+    }
+    case "cs":
+      // Lines of code: indented bars of varying length.
+      return (<g>{Array.from({ length: 8 }, (_, i) => {
+        const indent = [0, 1, 1, 2, 2, 1, 0, 1][i] * 18, w = 50 + r() * 140;
+        return (<g key={i}><rect x={20 + indent} y={10 + i * 15} width={w} height="7" rx="3.5" fill={color} opacity={0.25 + r() * 0.45} />
+          {r() > 0.55 ? <rect x={28 + indent + w} y={10 + i * 15} width={20 + r() * 40} height="7" rx="3.5" fill={color} opacity=".2" /> : null}</g>);
+      })}</g>);
+    case "eng":
+      // Blueprint: a fine grid with a few bolted plates.
+      return (<g>{Array.from({ length: 15 }, (_, i) => <line key={`v${i}`} x1={i * 20} y1="0" x2={i * 20} y2="132" stroke={color} strokeOpacity=".18" />)}
+        {Array.from({ length: 7 }, (_, i) => <line key={`h${i}`} x1="0" y1={i * 20} x2="280" y2={i * 20} stroke={color} strokeOpacity=".18" />)}
+        {Array.from({ length: 3 }, (_, i) => {
+          const x = 30 + i * 85 + r() * 10, y = 26 + r() * 40;
+          return (<g key={`p${i}`}><rect x={x} y={y} width="60" height="44" rx="4" fill="none" stroke={color} strokeWidth="2" opacity=".75" />
+            {[[x + 7, y + 7], [x + 53, y + 7], [x + 7, y + 37], [x + 53, y + 37]].map(([cx, cy], j) => <circle key={j} cx={cx} cy={cy} r="2.6" fill={color} />)}</g>);
+        })}</g>);
+    case "math":
+      // Plotted curves on axes.
+      return (<g fill="none" stroke={color} strokeLinecap="round">
+        <line x1="20" y1="66" x2="270" y2="66" strokeOpacity=".35" strokeWidth="1.4" /><line x1="40" y1="10" x2="40" y2="122" strokeOpacity=".35" strokeWidth="1.4" />
+        {[0, 1, 2].map((k) => {
+          const amp = 18 + r() * 26, f = 0.025 + k * 0.012, ph = r() * 6;
+          const d = Array.from({ length: 49 }, (_, i) => { const x = 40 + i * 5; return `${i ? "L" : "M"}${x},${66 - amp * Math.sin(x * f + ph)}`; }).join("");
+          return <path key={k} d={d} strokeWidth={2.4 - k * 0.5} opacity={0.9 - k * 0.25} />;
+        })}</g>);
     default:
       return (<g fill="none" stroke={color} strokeWidth="1.4" opacity=".6">{Array.from({ length: 7 }, (_, i) => (
         <path key={i} d={`M0,${20 + i * 16} C 70,${4 + i * 16 + r() * 20} 200,${36 + i * 16 - r() * 20} 280,${20 + i * 16}`} />))}</g>);
