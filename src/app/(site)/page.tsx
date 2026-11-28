@@ -14,7 +14,7 @@ export default function Home() {
             Understand any research paper. <Highlight>Know what to learn next.</Highlight>
           </h1>
           <p className="mt-5 max-w-[52ch] text-[19px] text-ink-2">
-            OpenResearch reads alongside you. It explains the paper in your terms, pins every claim to the passage it came from, and lays out a trail from what you need first to where the field went next.
+            Insightway reads alongside you. It explains the paper in your terms, pins every claim to the passage it came from, and lays out a trail from what you need first to where the field went next.
           </p>
           <div className="mt-7 flex flex-wrap gap-2.5">
             <Button variant="pri" asChild><Link href="/signup">Start reading free</Link></Button>
@@ -28,7 +28,7 @@ export default function Home() {
       <section className="mx-auto mt-24 max-w-[1220px] px-4 md:px-6">
         <p className="text-[12.5px] font-semibold uppercase tracking-[.08em] text-ink-3">Why readers stay</p>
         <h2 className="mt-2 max-w-[20ch] text-[34px] font-semibold leading-[1.05] tracking-[-0.035em] md:text-[42px]">An expert from the field, sitting next to you.</h2>
-        <p className="mb-8 mt-3 max-w-[60ch] text-[17px] text-ink-2">The first hour with a hard paper is the worst. OpenResearch makes it as productive as an hour with a patient expert.</p>
+        <p className="mb-8 mt-3 max-w-[60ch] text-[17px] text-ink-2">The first hour with a hard paper is the worst. Insightway makes it as productive as an hour with a patient expert.</p>
         <WhyCards />
       </section>
       <section className="mx-auto mt-24 max-w-[1220px] px-4 md:px-6">

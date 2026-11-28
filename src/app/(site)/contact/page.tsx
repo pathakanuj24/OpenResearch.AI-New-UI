@@ -13,8 +13,8 @@ export default function Contact() {
   const send = (e: React.FormEvent) => {
     e.preventDefault();
     if (!msg.trim()) { setErr("Write a message first."); return; }
-    const body = `${msg.trim()}\n\n— ${name.trim() || "OpenResearch reader"}${email.trim() ? ` (${email.trim()})` : ""}`;
-    window.location.href = `mailto:${TO}?subject=${encodeURIComponent("OpenResearch: message from the website")}&body=${encodeURIComponent(body)}`;
+    const body = `${msg.trim()}\n\n— ${name.trim() || "Insightway reader"}${email.trim() ? ` (${email.trim()})` : ""}`;
+    window.location.href = `mailto:${TO}?subject=${encodeURIComponent("Insightway: message from the website")}&body=${encodeURIComponent(body)}`;
   };
   return (
     <>

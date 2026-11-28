@@ -70,7 +70,7 @@ export function SiteFooter() {
           </div>
         ))}
       </div>
-      <p className="mx-auto max-w-[1220px] px-4 pb-8 text-[13px] text-ink-3 md:px-6">© {new Date().getFullYear()} OpenResearch · insightway.in · Made for readers in every field.</p>
+      <p className="mx-auto max-w-[1220px] px-4 pb-8 text-[13px] text-ink-3 md:px-6">© {new Date().getFullYear()} Insightway · insightway.in · Made for readers in every field.</p>
     </footer>
   );
 }

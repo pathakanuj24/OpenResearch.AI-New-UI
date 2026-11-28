@@ -90,7 +90,7 @@ export function Onboarding() {
       <DialogContent className="max-w-[640px] rounded-[var(--r-xl)] border-line bg-surface p-7 shadow-2 [&>button]:hidden">
         {step === 0 ? (
           <>
-            <p className="text-[12.5px] font-semibold text-ink-3">Welcome to OpenResearch · 1 of 3</p>
+            <p className="text-[12.5px] font-semibold text-ink-3">Welcome to Insightway · 1 of 3</p>
             <DialogTitle className="text-[26px] font-semibold tracking-[-0.03em]">Where do you mostly read?</DialogTitle>
             <DialogDescription className="text-ink-2">Every field gets the same care. You can read anything; this just tunes the first explanations.</DialogDescription>
             <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4" role="radiogroup" aria-label="Field">

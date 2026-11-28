@@ -247,7 +247,7 @@ function Privacy() {
     catch { toast.error("Couldn't clear memory. Try again."); }
   };
   return (
-    <Section id="privacy" title="Privacy and data" sub="What OpenResearch keeps about you, and how to take it back.">
+    <Section id="privacy" title="Privacy and data" sub="What Insightway keeps about you, and how to take it back.">
       <div className="mb-4 grid gap-2 sm:grid-cols-2">
         {tiles.map(([a, b]) => <div key={a} className="rounded-[14px] bg-surface-2 px-4 py-3"><p className="font-semibold">{a}</p><p className="text-[13px] text-ink-2">{b}</p></div>)}
       </div>

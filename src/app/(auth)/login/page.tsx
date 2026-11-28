@@ -54,7 +54,7 @@ export default function LoginPage() {
         </div>
         <Button type="submit" variant="pri" size="lg" loading={busy === "email"}>Log in</Button>
       </form>
-      <p className="mt-6 text-center text-[15px] text-ink-2">New to OpenResearch? <Link href="/signup" className="font-semibold text-moss-text">Create an account</Link></p>
+      <p className="mt-6 text-center text-[15px] text-ink-2">New to Insightway? <Link href="/signup" className="font-semibold text-moss-text">Create an account</Link></p>
     </AuthSplit>
   );
 }

@@ -15,7 +15,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     <html lang="en">
       <body style={{ margin: 0, minHeight: "100dvh", display: "grid", placeItems: "center", background: "#f7f8f5", color: "#1b241f", fontFamily: "system-ui, sans-serif", padding: 20 }}>
         <div style={{ maxWidth: 440, textAlign: "center" }}>
-          <h1 style={{ fontSize: 28, margin: "0 0 8px" }}>OpenResearch hit an error.</h1>
+          <h1 style={{ fontSize: 28, margin: "0 0 8px" }}>Insightway hit an error.</h1>
           <p style={{ color: "#4a5650", margin: "0 0 20px" }}>Try again. If it keeps happening, reload the page and quote the reference below.</p>
           <button type="button" onClick={reset} style={{ background: "#2f6b4f", color: "#fff", border: 0, borderRadius: 999, padding: "10px 20px", fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
             Try again

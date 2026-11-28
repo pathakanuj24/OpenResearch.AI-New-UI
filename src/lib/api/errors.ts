@@ -40,7 +40,7 @@ function serverMessage(body: unknown): { message?: string; code?: string; reques
 
 /** Plain-language text for the reader. Server messages are used only where they are written for people. */
 export function userMessage(status: number | undefined, kind: ApiErrorKind, server?: string, retryAfter?: number, requestId?: string | null) {
-  if (kind === "network") return "Can't reach OpenResearch. Check your connection and try again.";
+  if (kind === "network") return "Can't reach Insightway. Check your connection and try again.";
   if (kind === "timeout") return "That took too long. Try again.";
   if (kind === "aborted") return "Cancelled.";
   switch (status) {
@@ -51,7 +51,7 @@ export function userMessage(status: number | undefined, kind: ApiErrorKind, serv
     case 413: return "That file is too large to upload.";
     case 415: return "That file type isn't supported. Upload a PDF.";
     case 429: return retryAfter ? `You're going a bit fast. Try again in ${retryAfter} s.` : server ?? "You're going a bit fast. Try again shortly.";
-    case 503: return server ?? "OpenResearch is starting up or busy. Try again in a moment.";
+    case 503: return server ?? "Insightway is starting up or busy. Try again in a moment.";
   }
   if (status && status >= 500) return `Something went wrong on our side.${requestId ? ` Reference: ${requestId}` : ""}`;
   return server ?? "Something went wrong. Try again.";

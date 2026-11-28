@@ -100,7 +100,7 @@ export function Steps3() {
 }
 
 export const FAQ = [
-  ["Which fields does it work for?", "Every academic field: medicine, law, history, physics, economics, the arts and computer science are all treated the same. When you upload, OpenResearch identifies the paper's field, subfield and type, and adapts its vocabulary to it."],
+  ["Which fields does it work for?", "Every academic field: medicine, law, history, physics, economics, the arts and computer science are all treated the same. When you upload, Insightway identifies the paper's field, subfield and type, and adapts its vocabulary to it."],
   ["Where do the answers come from?", "Only from your paper. The guide searches its passages, and every claim carries a pin to the passage it came from. When the paper doesn't say, the guide tells you instead of guessing."],
   ["Who can see the papers I upload?", "Only you. Your papers, trails and notes are private to your account. Shared knowledge, like what a concept means, is never linked back to you."],
   ["Can I see and delete what it remembers about me?", "Yes. My learning shows every concept, interest and session note the guide keeps. Change or delete any of it, or erase it all from Settings."],
