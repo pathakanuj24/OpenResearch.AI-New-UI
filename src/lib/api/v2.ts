@@ -73,7 +73,17 @@ export type MapConcept = {
   requires: string[];
 };
 
-export type MapWork = { id: string; title: string; year?: number | null; cited_by?: number | null; url?: string | null };
+export type MapWork = {
+  id: string; title: string; year?: number | null; cited_by?: number | null; url?: string | null;
+  openalex_id?: string | null; doi?: string | null; // used to fetch an open-access copy ("Add to library")
+};
+
+/** One-click "Add to library": the server finds an open-access PDF via OpenAlex and queues it like an upload. */
+export async function addPaperFromWork(w: { openalex_id?: string | null; doi?: string | null }) {
+  // Downloading a large PDF from a publisher can take a while.
+  return (await api.post<{ paper_id: string; job_id: string | null }>("/v2/papers/from-work",
+    { openalex_id: w.openalex_id ?? null, doi: w.doi ?? null }, { timeout: 120_000 })).data;
+}
 
 export type LearningMapData = {
   paper: { id: string; title: string; year?: number | null; field?: string | null; openalex_id?: string | null };

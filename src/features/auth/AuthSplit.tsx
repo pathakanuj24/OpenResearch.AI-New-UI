@@ -6,7 +6,7 @@ import { Logo, MiniTrail, Topo } from "@/components/atlas";
 export function AuthSplit({ title, sub, children }: { title: string; sub: string; children: React.ReactNode }) {
   return (
     <div className="grid min-h-dvh bg-bg lg:grid-cols-2">
-      <aside className="relative hidden overflow-hidden bg-moss p-12 text-moss-ink lg:flex lg:flex-col">
+      <aside className="hero-surface relative hidden overflow-hidden bg-moss p-12 text-moss-ink lg:flex lg:flex-col">
         <Topo seed="auth" className="absolute inset-0 size-full" stroke="var(--moss-ink)" opacity={0.22} rings={8} centers={3} />
         <div className="relative"><Logo tone="sun" light /></div>
         <div className="relative mt-auto max-w-md">

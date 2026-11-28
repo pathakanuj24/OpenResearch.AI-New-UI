@@ -43,15 +43,21 @@ export function MiniTrail({ stops, className, labels = true, tone = "onMoss" }: 
                 <path d={`M${x},${y - 44} l26,7 l-26,8 Z`} fill="var(--sun)" />
               </g>
             ) : null}
-            {labels && s.label && (i === 0 || s.state === "current" || i === stops.length - 1) ? (
-              <text x={x} y={s.state === "current" ? y - 54 : y + 26} textAnchor={i === stops.length - 1 ? "end" : i === 0 ? "start" : "middle"}
-                fill={tone === "onMoss" ? "var(--moss-ink)" : "var(--ink-2)"} opacity=".85" fontSize="13" fontWeight="600" fontFamily="var(--display)">
-                {s.label}
-              </text>
-            ) : null}
           </g>
         );
       })}
+      {/* Labels last, so later stops never paint over them; a halo in the ground colour keeps them legible over the path. */}
+      {labels ? pts.map(([x, y], i) => {
+        const s = stops[i];
+        if (!s.label || !(i === 0 || s.state === "current" || i === stops.length - 1)) return null;
+        return (
+          <text key={`l${i}`} x={x} y={s.state === "current" ? y - 54 : y + 26} textAnchor={i === stops.length - 1 ? "end" : i === 0 ? "start" : "middle"}
+            fill={tone === "onMoss" ? "var(--moss-ink)" : "var(--ink-2)"} stroke={tone === "onMoss" ? "var(--moss)" : "var(--surface)"} strokeWidth="5"
+            strokeLinejoin="round" paintOrder="stroke" fontSize="13" fontWeight="600" fontFamily="var(--display)">
+            {s.label}
+          </text>
+        );
+      }) : null}
     </svg>
   );
 }

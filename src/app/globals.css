@@ -48,6 +48,9 @@
   --color-moss-ink: var(--moss-ink);
   --color-moss-soft: var(--moss-soft);
   --color-moss-text: var(--moss-text);
+  --color-cite: var(--cite);
+  --color-cite-ink: var(--cite-ink);
+  --color-cite-soft: var(--cite-soft);
   --color-sun: var(--sun);
   --color-sun-soft: var(--sun-soft);
   --color-sun-ink: var(--sun-ink);
@@ -115,9 +118,12 @@
     font: var(--fs-body)/1.55 var(--display);
   }
   :focus-visible { outline: 2.5px solid var(--moss); outline-offset: 2px; border-radius: 8px; }
-  ::selection { background: var(--sun-soft); color: var(--ink); }
+  ::selection { background: var(--cite-soft); color: var(--ink); }
   h1, h2, h3, h4 { text-wrap: balance; }
 }
+
+/* Big brand panels. In Atlas --hero is the moss itself, so this is a no-op kept for a future brand panel colour. */
+.hero-surface { --moss: var(--hero); --moss-ink: var(--hero-ink); }
 
 /* Reading text */
 .reading { font: 400 calc(var(--fs-reading) * var(--reading-scale, 1))/1.78 var(--read); max-width: 760px; }
@@ -128,13 +134,13 @@
 .answer strong { font-weight: 600; }
 .answer code { font-family: ui-monospace, Menlo, monospace; font-size: .85em; background: var(--surface-2); padding: .1em .3em; border-radius: 4px; }
 
-/* Highlighted passage: sun-soft highlighter sweep */
-.psg { border-radius: var(--r-sm); background-image: linear-gradient(var(--sun-soft), var(--sun-soft));
+/* Highlighted (cited) passage: sun-soft highlighter sweep */
+.psg { border-radius: var(--r-sm); background-image: linear-gradient(var(--cite-soft), var(--cite-soft));
   background-size: 0% 100%; background-repeat: no-repeat; transition: background-size .9s var(--ease); }
 .psg.hit { background-size: 100% 100%; }
 
 /* PDF fallback text-layer highlight */
-.react-pdf__Page__textContent mark.cite-mark { background: var(--sun-soft); color: transparent; mix-blend-mode: multiply; border-radius: 2px; }
+.react-pdf__Page__textContent mark.cite-mark { background: var(--cite-soft); color: transparent; mix-blend-mode: multiply; border-radius: 2px; }
 
 /* Motion helpers */
 @keyframes pulse-dot { 50% { transform: scale(.5); } }
@@ -145,6 +151,64 @@
 @keyframes ink-in { 0% { transform: scale(1.4) rotate(-20deg); opacity: 0; } 100% { transform: scale(1) rotate(-6deg); opacity: 1; } }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 .animate-pop { animation: pop var(--t-med) var(--spring) both; }
+
+/*
+ * Entrances. Fill mode is "backwards", never "both": a transform left on an element after it lands would become
+ * the containing block for fixed descendants (the ask bar, menus) and break them.
+ */
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes enter { from { opacity: 0; transform: translateY(8px); } }
+@keyframes panel-in { from { opacity: 0; transform: translateX(28px); } }
+@keyframes panel-out { to { opacity: 0; transform: translateX(28px); } }
+@keyframes flash {
+  0%, 35% { background-color: var(--cite-soft); box-shadow: 0 0 0 8px var(--cite-soft); }
+  100% { background-color: transparent; box-shadow: 0 0 0 8px transparent; }
+}
+.animate-fade-in { animation: fade-in var(--t-med) var(--ease) backwards; }
+.animate-enter { animation: enter var(--t-slow) var(--ease) backwards; }
+.animate-panel-in { animation: panel-in var(--t-med) var(--ease) backwards; }
+/* Exits are quicker than entrances. */
+.animate-panel-out { animation: panel-out var(--t-fast) var(--ease) forwards; }
+.animate-flash { animation: flash 1.6s var(--ease); border-radius: var(--r-sm); }
+/* Children rise in one after another (first eight; the rest arrive with the eighth). */
+.stagger > * { animation: enter var(--t-slow) var(--ease) backwards; }
+.stagger > :nth-child(2) { animation-delay: 50ms; } .stagger > :nth-child(3) { animation-delay: 100ms; }
+.stagger > :nth-child(4) { animation-delay: 150ms; } .stagger > :nth-child(5) { animation-delay: 200ms; }
+.stagger > :nth-child(6) { animation-delay: 250ms; } .stagger > :nth-child(7) { animation-delay: 300ms; }
+.stagger > :nth-child(n+8) { animation-delay: 350ms; }
+
+/* Reading flow: blocks rise in once as they scroll into view (useReveal sets data-revealed). Never hidden without JS:
+   the hidden state only applies under [data-reveal-ready], which the hook sets on the container. */
+[data-reveal-ready] [data-reveal] { opacity: 0; transform: translateY(14px);
+  /* background-size keeps the cited-passage highlighter sweep (.psg) animating */
+  transition: opacity .7s var(--ease), transform .7s var(--ease), background-size .9s var(--ease); }
+[data-reveal-ready] [data-reveal][data-revealed] { opacity: 1; transform: none; }
+
+/* Network: nodes drift gently; lit edges carry a flow of dashes toward where they point. */
+@keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -3px); } }
+@keyframes flow { to { stroke-dashoffset: -0.1; } }
+.edge-flow { stroke-dasharray: .06 .04; animation: flow 1.4s linear infinite; }
+
+/* Guide at work: a page being scanned and pins dropping onto it. */
+@keyframes scan { 0% { transform: translateY(0); opacity: 0; } 15%, 85% { opacity: 1; } 100% { transform: translateY(22px); opacity: 0; } }
+@keyframes drop { 0%, 20% { transform: translateY(-10px) scale(.4); opacity: 0; } 40% { transform: translateY(0) scale(1.15); opacity: 1; } 55%, 85% { transform: scale(1); opacity: 1; } 100% { opacity: 0; } }
+
+/* Micro-interactions */
+@keyframes shake { 20%, 60% { translate: -5px 0; } 40%, 80% { translate: 5px 0; } }
+@keyframes grow-x { from { transform: scaleX(0); } }
+@keyframes ripple { from { transform: scale(1); opacity: .7; } to { transform: scale(1.9); opacity: 0; } }
+@keyframes celebrate { 0% { transform: scale(1); } 35% { transform: scale(1.4); } 60% { transform: scale(.92); } 100% { transform: scale(1); } }
+@keyframes burst { from { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 1; } to { transform: rotate(var(--a)) translateY(-16px) scale(.3); opacity: 0; } }
+.animate-ripple { animation: ripple .7s var(--ease) forwards; }
+.animate-celebrate { animation: celebrate .7s var(--spring); }
+
+/* Resource cards rise in once when they first scroll into view (ResourceCard sets the attributes). The animation
+   only runs on [data-in], so hover transitions are never delayed; cards in a row arrive one after another. */
+.card-in[data-pending] { opacity: 0; }
+.card-in[data-in] { animation: card-rise .6s var(--ease) backwards; }
+.card-in[data-in]:nth-child(3n+2) { animation-delay: 80ms; }
+.card-in[data-in]:nth-child(3n) { animation-delay: 160ms; }
+@keyframes card-rise { from { opacity: 0; transform: translateY(26px) scale(.97); } }
 .shimmer { background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--surface) 70%, transparent) 50%, transparent 100%);
   background-size: 200% 100%; animation: shimmer 1.6s linear infinite; }
 

@@ -121,7 +121,7 @@ export function ResourcesPage() {
   return (
     <Wrap>
       <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
-        <section className="relative overflow-hidden rounded-[28px] bg-moss p-6 text-moss-ink shadow-2 md:p-8">
+        <section className="hero-surface relative overflow-hidden rounded-[28px] bg-moss p-6 text-moss-ink shadow-2 md:p-8">
           <Topo seed={`res-${paper.id}`} className="absolute inset-0 size-full" stroke="var(--moss-ink)" opacity={0.15} />
           <div className="relative">
             <p className="text-[13px] font-semibold opacity-80">Your next step · {shortTitle(paper.title)} trail</p>
@@ -159,7 +159,7 @@ export function ResourcesPage() {
               <div key={k} className="flex justify-between gap-3 py-2.5"><dt className="text-ink-2">{k}</dt><dd className="text-right font-semibold">{v}</dd></div>
             ))}
           </dl>
-          <Button size="sm" className="mt-3 w-full" asChild><Link href="/learning#pace">Change in My learning</Link></Button>
+          <Button size="sm" className="mt-3 w-full" asChild><Link href="/settings#learning">Change in Settings</Link></Button>
           {ready.length > 1 ? (
             <label className="mt-4 block text-[13px] text-ink-2">Trail for
               <select value={paper.id} onChange={(e) => setChosen(e.target.value)}
@@ -208,13 +208,13 @@ export function ResourcesPage() {
                         <h3 className="text-[20px] font-semibold tracking-[-0.02em]">{g.concept}</h3>
                         <ConceptChip size="sm" name={g.status === "learning" ? "Learning" : "New to me"} state={g.status as ConceptState}
                           onChange={(s) => setConcept.mutate({ name: g.concept, state: s })} />
-                        {blocking ? <span className="rounded-pill bg-sun-soft px-2.5 py-0.5 text-xs font-semibold text-sun-ink">Blocking you now</span> : null}
+                        {blocking ? <span className="rounded-pill bg-sun-soft px-2.5 py-0.5 text-xs font-semibold text-ink">Blocking you now</span> : null}
                       </div>
                       <p className="mt-0.5 text-[13px] text-ink-3">{g.role === "prerequisite" ? "Prerequisite for this paper" : "Core idea of this paper"}</p>
                       {g.resources.length ? (
                         <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{g.resources.map((r) => card({ ...r, concept: g.concept }, g.concept, g.status))}</div>
                       ) : (
-                        <p className="mt-3 rounded-[var(--r)] bg-sun-soft px-4 py-3 text-sm text-sun-ink">
+                        <p className="mt-3 rounded-[var(--r)] bg-sun-soft px-4 py-3 text-sm text-ink">
                           {g.all ? "Your filters hide every resource for this concept. Clear a filter to see them." : "We couldn't find a good resource for this one."}{" "}
                           <Link href={`/papers/${paper.id}?ask=${encodeURIComponent(`Explain ${g.concept} using this paper`)}`} className="font-semibold underline">Ask the guide to explain it from the paper</Link>.
                         </p>
@@ -239,7 +239,7 @@ export function ResourcesPage() {
           )}
         </div>
       )}
-      <p className="mt-10 text-center text-[12.5px] text-ink-3">Resources come from YouTube, the web and OpenAlex. Each card shows its source.</p>
+      <p className="mt-10 text-center text-[12.5px] text-ink-3">Resources come from YouTube, Medium, Substack, Towards Data Science, the wider web and OpenAlex. Each card shows its source.</p>
     </Wrap>
   );
 }

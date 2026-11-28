@@ -1,16 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Check, ExternalLink, Sparkles, X } from "lucide-react";
-import { api } from "@/lib/api/client";
-import { Button, ConceptChip, Eyebrow, ResourceCard, Segmented, Toggle, Topo, type AtlasResource, type ConceptState } from "@/components/atlas";
+import { Button, ConceptChip, Eyebrow, ResourceCard, Segmented, Toggle, Topo, type ConceptState } from "@/components/atlas";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMap } from "@/lib/data";
+import { useConceptResources, useMap } from "@/lib/data";
 import { buildTrail, shortTitle, unlocks, type Stop, type Zone } from "@/lib/trail";
 import { useGuide } from "@/features/guide/store";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/track";
+import { TrailNetwork } from "./TrailNetwork";
 
 const ZONES: { key: Zone; label: string }[] = [
   { key: "before", label: "Before" }, { key: "this", label: "This paper" }, { key: "after", label: "After" },
@@ -20,13 +19,17 @@ export function TrailView({ paperId, title, conceptState, onConcept }: {
   paperId: string; title: string; conceptState: (n: string) => ConceptState; onConcept: (n: string, s: ConceptState) => void;
 }) {
   const [onlyNew, setOnlyNew] = useState(false);
-  const [mode, setMode] = useState<"trail" | "list">("trail");
-  const [selected, setSelected] = useState<string | null>(null);
+  const [mode, setMode] = useState<"trail" | "network" | "list">("trail");
+  const [selected, setSelected] = useState<Stop | null>(null);
   const { data: map, isLoading } = useMap(paperId);
   const all = useMemo(() => (map ? buildTrail(map, (c) => conceptState(c.name)) : []), [map, conceptState]);
   const stops = onlyNew ? all.filter((s) => s.kind !== "concept" || s.state !== "done") : all;
   const curIdx = all.findIndex((s) => s.state === "current");
-  const sel = stops.find((s) => s.id === selected) ?? null;
+  const sel = selected;
+  const select = (st: Stop) => {
+    setSelected(st);
+    track({ type: "trail_stop_opened", paper_id: paperId, concept: st.concept?.name, value: st.zone });
+  };
 
   if (isLoading) return <div className="mx-auto max-w-[1360px] space-y-4 px-4 py-6 md:px-6"><Skeleton className="h-12 w-96" /><Skeleton className="h-[520px] rounded-[28px]" /></div>;
   if (!map) {
@@ -47,20 +50,20 @@ export function TrailView({ paperId, title, conceptState, onConcept }: {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Toggle checked={onlyNew} onChange={setOnlyNew} label="Only new to me" />
-          <Segmented label="Layout" value={mode} onChange={setMode} size="lg" options={[{ value: "trail", label: "Trail" }, { value: "list", label: "List" }]} />
+          <Segmented label="Layout" value={mode} onChange={setMode} size="lg" options={[{ value: "trail", label: "Trail" }, { value: "network", label: "Network" }, { value: "list", label: "List" }]} />
         </div>
       </div>
 
       <JourneyBar stops={all} current={curIdx} />
 
-      {mode === "trail" ? (
-        <div className="relative mt-4">
-          <TrailMap stops={stops} selected={selected} onSelect={(sid) => {
-            setSelected(sid);
-            const st = stops.find((x) => x.id === sid);
-            track({ type: "trail_stop_opened", paper_id: paperId, concept: st?.concept?.name, value: st?.zone });
-          }} />
-          {sel ? <StopCard stop={sel} map={map} conceptState={conceptState} onConcept={onConcept} onClose={() => setSelected(null)} /> : null}
+      {mode !== "list" ? (
+        <div key={mode} className="relative mt-4 animate-enter">
+          {mode === "trail" ? (
+            <TrailMap stops={stops} selected={sel?.id ?? null} onSelect={(sid) => { const st = stops.find((x) => x.id === sid); if (st) select(st); }} />
+          ) : (
+            <TrailNetwork map={map} stops={stops} selected={sel?.id ?? null} onSelect={select} conceptState={conceptState} />
+          )}
+          {sel ? <StopCard key={sel.id} stop={sel} map={map} conceptState={conceptState} onConcept={onConcept} onClose={() => setSelected(null)} /> : null}
         </div>
       ) : (
         <TrailList stops={stops} map={map} conceptState={conceptState} onConcept={onConcept} />
@@ -114,7 +117,8 @@ function TrailMap({ stops, selected, onSelect }: { stops: Stop[]; selected: stri
           </g>
         ))}
         <path d={path(0, stops.length - 1)} fill="none" stroke="var(--surface-2)" strokeWidth="22" strokeLinecap="round" />
-        <path d={path(cur, stops.length - 1)} fill="none" stroke="var(--ink-3)" strokeWidth="3.5" strokeDasharray="1 11" strokeLinecap="round" />
+        <path d={path(cur, stops.length - 1)} fill="none" stroke="var(--ink-3)" strokeWidth="3.5" strokeDasharray="1 11" strokeLinecap="round"
+          style={{ animation: "fade-in .8s var(--ease) .6s backwards" }} />
         {cur > 0 ? <path d={path(0, cur)} fill="none" stroke="var(--moss)" strokeWidth="6" strokeLinecap="round"
           style={{ strokeDasharray: 4000, ["--len" as string]: 4000, animation: "draw 1.6s var(--ease) both" }} /> : null}
         {stops.map((s, i) => {
@@ -124,6 +128,8 @@ function TrailMap({ stops, selected, onSelect }: { stops: Stop[]; selected: stri
             <g key={s.id} transform={`translate(${x},${y})`} className="cursor-pointer" role="button" tabIndex={0}
               aria-label={`${s.label}: ${s.state === "done" ? "done" : s.state === "current" ? "you are here" : "ahead"}`}
               onClick={() => onSelect(s.id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(s.id); } }}>
+              {/* Stops land one after another along the path as it draws. */}
+              <g style={{ animation: `pop .5s var(--spring) ${200 + i * 70}ms backwards`, transformBox: "fill-box", transformOrigin: "center" }}>
               {s.state === "current" ? (
                 <g style={{ animation: "bob 2.4s ease-in-out infinite" }}>
                   <line x1="0" y1="-12" x2="0" y2="-62" stroke="var(--sun)" strokeWidth="3.5" strokeLinecap="round" />
@@ -138,20 +144,13 @@ function TrailMap({ stops, selected, onSelect }: { stops: Stop[]; selected: stri
               <text y="34" textAnchor="middle" fill={s.state === "ahead" ? "var(--ink-2)" : "var(--ink)"} fontSize="14" fontWeight={s.state === "current" || s.kind === "paper" ? 700 : 600} fontFamily="var(--display)">
                 {shortTitle(s.label, 22)}
               </text>
+              </g>
             </g>
           );
         })}
       </svg>
     </div>
   );
-}
-
-function useConceptResources(concept?: string) {
-  return useQuery({
-    queryKey: ["concept-resources", concept],
-    queryFn: async () => (await api.get<(AtlasResource & { score?: number })[]>("/v2/resources", { params: { concept } })).data,
-    enabled: Boolean(concept), staleTime: 10 * 60_000, retry: false,
-  });
 }
 
 function StopCard({ stop, map, conceptState, onConcept, onClose }: {
@@ -164,7 +163,8 @@ function StopCard({ stop, map, conceptState, onConcept, onClose }: {
   return (
     <div className="mt-4 rounded-[var(--r-lg)] border border-line bg-surface p-5 shadow-2 md:absolute md:right-5 md:top-5 md:mt-0 md:w-[380px] animate-pop" role="dialog" aria-label={stop.label}>
       <button type="button" onClick={onClose} aria-label="Close" className="absolute right-3 top-3 grid size-8 place-items-center rounded-full text-ink-2 hover:bg-surface-2"><X className="size-4" /></button>
-      <Eyebrow>{stop.zone === "before" ? "Learn before" : stop.zone === "this" ? "In this paper" : "Came after"}</Eyebrow>
+      <Eyebrow>{stop.work ? (stop.zone === "before" ? "This paper builds on it" : "Came after · cites this paper")
+        : stop.zone === "before" ? "Learn before" : stop.zone === "this" ? "In this paper" : "Came after"}</Eyebrow>
       {c ? (
         <>
           <h3 className="mt-0.5 pr-8 text-[20px] font-semibold tracking-[-0.02em]">{c.name}</h3>

@@ -51,7 +51,7 @@ export default function PdfColumn({ paperId, target }: { paperId: string; target
         : (
           <Document file={file} onLoadSuccess={({ numPages }) => setN(numPages)} loading={<div className="flex justify-center py-16"><Loader2 className="size-5 animate-spin" /></div>}>
             {Array.from({ length: n }, (_, i) => i + 1).map((p) => (
-              <div key={p} ref={(el) => { pages.current[p] = el; }} data-page={p} className="mb-5 scroll-mt-24 overflow-hidden rounded-[var(--r)] border border-line bg-white shadow-1">
+              <div key={p} ref={(el) => { pages.current[p] = el; }} data-page={p} data-reveal className="mb-5 scroll-mt-24 overflow-hidden rounded-[var(--r)] border border-line bg-white shadow-1">
                 <Page pageNumber={p} width={width} customTextRenderer={render} />
               </div>
             ))}

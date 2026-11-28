@@ -181,6 +181,23 @@ export function Guide({ chat, onCite, conceptState, onConcept, onClose, classNam
     el.scrollTo({ top: el.scrollHeight, behavior: busy ? "auto" : "smooth" });
   });
 
+  // A cited passage's margin pin asked for its answer: bring it into view and flash it.
+  const focus = useGuide((s) => s.focus);
+  useEffect(() => {
+    if (!focus) return;
+    const t = setTimeout(() => {
+      const box = scroller.current;
+      const el = document.getElementById(`turn-${focus.messageId}`);
+      if (!box || !el) return;
+      stick.current = false;
+      box.scrollTo({ top: el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - 16, behavior: "smooth" });
+      el.classList.remove("animate-flash");
+      void el.offsetWidth; // restart the animation when the same answer is asked for twice
+      el.classList.add("animate-flash");
+    }, 150); // the panel may still be opening
+    return () => clearTimeout(t);
+  }, [focus]);
+
   const send = () => { ask(input); setInput(""); if (area.current) area.current.style.height = "auto"; };
   const first = user?.displayName?.split(" ")[0];
 
@@ -204,12 +221,12 @@ export function Guide({ chat, onCite, conceptState, onConcept, onClose, classNam
       <div ref={scroller} onScroll={(e) => { const el = e.currentTarget; stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80; }}
         className="min-h-0 flex-1 space-y-7 overflow-y-auto px-4 py-5" aria-live="polite">
         {messages.length === 0 ? (
-          <div className="space-y-4 pt-2">
+          <div className="stagger space-y-4 pt-2">
             <p className="answer text-[17px]">
               Hi{first ? ` ${first}` : ""}. What would you like to understand{paperTitle ? <> about <i>{paperTitle}</i></> : ""}?
             </p>
             <p className="text-sm text-ink-2">I&apos;ll search the paper, check what you already know, and pin every claim to its passage.</p>
-            <div className="flex flex-col gap-2">
+            <div className="stagger flex flex-col gap-2">
               {SUGGESTIONS.map((s) => (
                 <button key={s} type="button" onClick={() => ask(s)} className="rounded-[14px] border border-line bg-bg px-3.5 py-2.5 text-left text-[14px] font-medium transition-colors hover:border-moss hover:bg-moss-soft/40">{s}</button>
               ))}
@@ -277,7 +294,7 @@ function Turn({ m, live, last, onCite, conceptState, onConcept, onFollow, onRetr
   const clean = answerText(raw);
   const [shown, revealing] = useSmoothText(clean, live);
   if (m.role === "user") {
-    return <p className="ml-auto w-fit max-w-[88%] whitespace-pre-wrap rounded-[18px] rounded-br-md bg-surface-2 px-3.5 py-2 text-[15px]">{raw}</p>;
+    return <p className="ml-auto w-fit max-w-[88%] origin-bottom-right animate-pop whitespace-pre-wrap rounded-[18px] rounded-br-md bg-surface-2 px-3.5 py-2 text-[15px]">{raw}</p>;
   }
   const steps = m.parts.flatMap((p, i) => (p.type === "data-agent-step" ? [{ id: p.id ?? String(i), ...p.data, detail: p.data.detail ?? undefined }] : []));
   const cites = m.parts.find((p) => p.type === "data-citations")?.data;
@@ -290,7 +307,7 @@ function Turn({ m, live, last, onCite, conceptState, onConcept, onFollow, onRetr
   const totalMs = steps.reduce((a, s) => a + (s.ms ?? 0), 0);
 
   return (
-    <div className="group space-y-3">
+    <div id={`turn-${m.id}`} className="group scroll-mt-4 space-y-3 animate-enter">
       {writing ? <Working steps={steps} /> : steps.length ? (
         <div>
           <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
@@ -311,7 +328,7 @@ function Turn({ m, live, last, onCite, conceptState, onConcept, onFollow, onRetr
       ) : null}
 
       {settled && cites?.cited.length ? (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="stagger flex flex-wrap gap-1.5">
           {cites.cited.map((n) => {
             const s = cites.sources.find((x) => x.index === n);
             return s ? (
@@ -325,7 +342,7 @@ function Turn({ m, live, last, onCite, conceptState, onConcept, onFollow, onRetr
       ) : null}
 
       {settled && concepts.length ? (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="stagger flex flex-wrap gap-1.5">
           {concepts.slice(0, 8).map((c) => (
             <ConceptChip key={c.name} name={c.name} definition={c.definition} requires={c.requires} state={conceptState(c.name)} onChange={(s) => onConcept(c.name, s)} size="sm" />
           ))}
@@ -342,7 +359,7 @@ function Turn({ m, live, last, onCite, conceptState, onConcept, onFollow, onRetr
       ) : null}
 
       {last && follow.length ? (
-        <div className="flex flex-col items-start gap-1.5 pt-1">
+        <div className="stagger flex flex-col items-start gap-1.5 pt-1">
           {follow.map((q) => (
             <button key={q} type="button" onClick={() => onFollow(q)}
               className="rounded-[14px] border border-line bg-bg px-3 py-1.5 text-left text-[13.5px] text-ink-2 transition-[transform,border-color] duration-[var(--t-med)] ease-spring hover:-translate-y-0.5 hover:border-moss hover:text-ink">

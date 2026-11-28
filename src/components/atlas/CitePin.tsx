@@ -4,8 +4,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 
 /** Sun map-pin citation, numbered in order of first use. Click jumps to the passage. */
-export function CitePin({ n, onClick, label, quote, className }: {
-  n: number; onClick?: () => void; label?: string; quote?: string; className?: string;
+export function CitePin({ n, onClick, label, quote, hint, className }: {
+  n: number; onClick?: () => void; label?: string; quote?: string;
+  /** Plain second line for the tooltip (no quote marks), e.g. where the passage is. */
+  hint?: string; className?: string;
 }) {
   const pin = (
     <button type="button" onClick={onClick} aria-label={label ?? `Source ${n}`}
@@ -14,13 +16,14 @@ export function CitePin({ n, onClick, label, quote, className }: {
       <span className="rotate-45">{n}</span>
     </button>
   );
-  if (!quote) return pin;
+  if (!quote && !hint) return pin;
   return (
     <Tooltip>
       <TooltipTrigger asChild>{pin}</TooltipTrigger>
       <TooltipContent className="max-w-xs bg-ink text-bg">
         {label ? <p className="font-semibold">{label}</p> : null}
-        <p className="mt-0.5 font-read opacity-85">“{quote}”</p>
+        {quote ? <p className="mt-0.5 font-read opacity-85">“{quote}”</p> : null}
+        {hint ? <p className="mt-0.5 opacity-85">{hint}</p> : null}
       </TooltipContent>
     </Tooltip>
   );

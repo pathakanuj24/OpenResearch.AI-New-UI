@@ -26,6 +26,7 @@ type Prefs = {
   onboardingSkipped: boolean;
   personalise: boolean; // send reading activity to the server for recommendations
   readerMode: "text" | "pdf";
+  proveIt: boolean; // ask two quick questions before a concept is stamped Known
   set: (p: Partial<Omit<Prefs, "set">>) => void;
 };
 
@@ -45,6 +46,7 @@ export const usePrefs = create<Prefs>()(
       onboardingSkipped: false,
       personalise: true,
       readerMode: "text",
+      proveIt: true,
       set: (p) => set(p),
     }),
     { name: "openresearch-prefs" },
