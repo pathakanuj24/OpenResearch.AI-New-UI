@@ -21,9 +21,9 @@ const literata = Literata({
 });
 
 export const metadata: Metadata = {
-  title: { default: "OpenResearch: understand any research paper", template: "%s · OpenResearch" },
+  title: { default: "Insightway: understand any research paper", template: "%s · Insightway" },
   description:
-    "OpenResearch reads alongside you: it explains any paper in your terms, pins every claim to its passage, and maps what to learn next.",
+    "Insightway reads alongside you: it explains any paper in your terms, pins every claim to its passage, and maps what to learn next.",
   icons: { icon: "/icon.svg" },
 };
 

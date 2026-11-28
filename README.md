@@ -1,4 +1,4 @@
-# OpenResearch frontend (Atlas)
+# Insightway frontend (Atlas)
 
 Next.js 16 (App Router), React 19, Tailwind 4, shadcn/ui primitives, TanStack Query, the Vercel AI SDK (`useChat`), and Firebase Auth.
 The visual direction is **Atlas**. Its spec is `../docs/redesign/standalone/OpenResearch-Atlas-Design-System.html`.
