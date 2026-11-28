@@ -241,6 +241,14 @@ export const useJobs = create<JobsState>()(
 
 export type Usage = { tokens_today: number; daily_budget: number; papers?: number; paper_limit?: number };
 
+/** Same wording as the server's paper_limit error. */
+export function libraryFullMessage(count: number, limit: number) {
+  const over = count - limit + 1;
+  return over <= 1
+    ? `Your library is full (${count} of ${limit} papers). Delete a paper to add another.`
+    : `Your library has ${count} papers and the limit is ${limit}. Delete ${over} papers to add another.`;
+}
+
 /** How many papers the reader has and may keep (the server enforces the limit; this is for display). */
 export function usePaperQuota() {
   const q = useQuery({ queryKey: ["usage"], queryFn: async () => (await api.get<Usage>("/v2/me/usage")).data, staleTime: 30_000 });
@@ -257,7 +265,7 @@ export function useUpload() {
     if (file.size > 50 * 1024 * 1024) { toast.error("That PDF is over 50 MB. Try a smaller file."); return null; }
     const usage = qc.getQueryData<Usage>(["usage"]);
     if (usage?.papers != null && usage.paper_limit != null && usage.papers >= usage.paper_limit) {
-      toast.error(`Your library is full (${usage.papers} of ${usage.paper_limit} papers). Delete a paper to add another.`);
+      toast.error(libraryFullMessage(usage.papers, usage.paper_limit));
       return null;
     }
     const key = `${file.name}-${Date.now()}`;

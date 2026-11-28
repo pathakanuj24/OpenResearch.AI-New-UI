@@ -8,7 +8,7 @@ import { AlertTriangle, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { Button, Card, Eyebrow, FieldCover, MiniTrail, ProgressRing, Topo } from "@/components/atlas";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/lib/auth/authStore";
-import { useDeletePaper, useJobs, useLastPaper, useLibrary, useMap, useMemory, usePaperQuota, usePaperResources, useReingest, useUpload, type ShelfPaper } from "@/lib/data";
+import { useDeletePaper, useJobs, useLastPaper, useLibrary, useMap, libraryFullMessage, useMemory, usePaperQuota, usePaperResources, useReingest, useUpload, type ShelfPaper } from "@/lib/data";
 import { FIELD_LABEL, fieldKey, fieldVar, type FieldKey } from "@/lib/fields";
 import { blockingConcept, buildTrail, shortTitle, unlocks } from "@/lib/trail";
 import { cn } from "@/lib/utils";
@@ -134,7 +134,7 @@ function Tiles({ paperId }: { paperId?: string }) {
         <Eyebrow>Any field, any PDF</Eyebrow>
         <p className="text-[17px] font-semibold">{quota.full ? "Library full" : "Add a paper"}</p>
         <p className="text-sm text-ink-2">{quota.full
-          ? `You have ${quota.count} of ${quota.limit} papers. Delete one to add another.`
+          ? libraryFullMessage(quota.count!, quota.limit!)
           : <>Drop a PDF anywhere on this page. We&apos;ll map it in about a minute.{quota.limit != null && quota.count != null ? ` ${quota.limit - quota.count} of ${quota.limit} left.` : ""}</>}</p>
       </button>
     </div>
@@ -253,7 +253,7 @@ function AddCard() {
       <input ref={input} type="file" accept="application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f).then((id) => { if (id) router.push(`/papers/${id}`); }); e.target.value = ""; }} />
       <span className="grid size-14 place-items-center rounded-[18px] bg-moss-soft text-moss-text"><Plus className="size-6" /></span>
       <span className="font-semibold">{quota.full ? "Library full" : "Add a paper"}</span>
-      <span className="text-[13px] text-ink-3">{quota.full ? `${quota.count} of ${quota.limit} papers. Delete one to add another.` : "or drop a PDF anywhere"}</span>
+      <span className="text-[13px] text-ink-3">{quota.full ? libraryFullMessage(quota.count!, quota.limit!) : "or drop a PDF anywhere"}</span>
     </button>
   );
 }
