@@ -23,7 +23,7 @@ export function Today() {
   const ready = papers.filter((p) => p.status === "ready");
   const current = ready.find((p) => p.id === lastId) ?? ready[0];
   return (
-    <div className="mx-auto max-w-[1220px] space-y-5 px-4 pt-4 md:px-6">
+    <div className="mx-auto max-w-[1220px] stagger space-y-5 px-4 pt-4 md:px-6">
       {current ? <Hero paper={current} /> : <ProcessingHero papers={papers} />}
       <Tiles paperId={current?.id} />
       <Shelf papers={papers} />
@@ -48,7 +48,7 @@ function Hero({ paper }: { paper: ShelfPaper }) {
   const headline = !map ? `Pick up ${title}.` : left === 0 ? "You're ready for the paper." : left === 1 ? "One stop left before the paper." : `${left} stops left before the paper.`;
   const unlocked = map && block ? unlocks(map, block) : [];
   return (
-    <section className="relative overflow-hidden rounded-[28px] bg-moss px-6 py-8 text-moss-ink shadow-2 md:px-10 md:py-11">
+    <section className="hero-surface relative overflow-hidden rounded-[28px] bg-moss px-6 py-8 text-moss-ink shadow-2 md:px-10 md:py-11">
       <Topo seed={paper.id} className="absolute inset-0 size-full" stroke="var(--moss-ink)" opacity={0.16} rings={11} centers={4} />
       <div className="relative grid items-center gap-6 md:grid-cols-[1.1fr_1fr]">
         <div>
@@ -82,7 +82,7 @@ function Hero({ paper }: { paper: ShelfPaper }) {
 function ProcessingHero({ papers }: { papers: ShelfPaper[] }) {
   const busy = papers.find((p) => p.status === "processing");
   return (
-    <section className="relative overflow-hidden rounded-[28px] bg-moss px-6 py-10 text-moss-ink shadow-2 md:px-10">
+    <section className="hero-surface relative overflow-hidden rounded-[28px] bg-moss px-6 py-10 text-moss-ink shadow-2 md:px-10">
       <Topo seed="processing" className="absolute inset-0 size-full" stroke="var(--moss-ink)" opacity={0.16} />
       <div className="relative max-w-xl">
         <h1 className="text-[34px] font-semibold leading-tight tracking-[-0.03em] md:text-[40px]">

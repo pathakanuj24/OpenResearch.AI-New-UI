@@ -5,12 +5,16 @@ import { Check } from "lucide-react";
 import { Term, type ConceptState } from "@/components/atlas";
 import type { Section } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import type { CitedRef } from "./citations";
+import { MarginPin } from "./MarginPin";
 
 export type PassageTarget = { id: string; nonce: number };
 
 /** Reflowable paper text. Concept terms are marked by the reader's state; cited passages get the highlighter. */
-export function PassageColumn({ sections, current, target, conceptState, onConcept, definitions }: {
+export function PassageColumn({ sections, current, target, cited, conceptState, onConcept, definitions }: {
   sections: Section[]; current: number; target?: PassageTarget | null;
+  /** Passage id → the answers that cited it (latest first). */
+  cited?: Map<string, CitedRef[]>;
   conceptState: (name: string) => ConceptState; onConcept: (name: string, s: ConceptState) => void;
   definitions: Record<string, string | null | undefined>;
 }) {
@@ -29,8 +33,8 @@ export function PassageColumn({ sections, current, target, conceptState, onConce
       {sections.map((sec, i) => {
         const state = i < current ? "done" : i === current ? "current" : "ahead";
         return (
-          <section key={`${sec.title}-${i}`} id={`s-${i}`} data-section={i} className="scroll-mt-28">
-            <h2 className="mb-3 mt-10 flex items-center gap-2.5 text-[20px] font-semibold tracking-[-0.02em]">
+          <section key={`${sec.title}-${i}`} id={`s-${i}`} data-section={i} data-section-title={sec.title} className="scroll-mt-28">
+            <h2 data-reveal className="mb-3 mt-10 flex items-center gap-2.5 text-[20px] font-semibold tracking-[-0.02em]">
               <span className={cn("grid size-6 place-items-center rounded-lg text-xs font-semibold",
                 state === "done" ? "bg-known-soft text-known" : state === "current" ? "bg-moss text-moss-ink" : "bg-surface-2 text-ink-3")}
                 aria-label={state === "done" ? "Read" : state === "current" ? "You are here" : "Ahead"}>
@@ -39,7 +43,8 @@ export function PassageColumn({ sections, current, target, conceptState, onConce
               {sec.title}
             </h2>
             {sec.passages.map((p) => (
-              <p key={p.id} id={`p-${p.id}`} data-passage={p.id} className="psg reading -mx-2 mb-4 px-2 py-1 scroll-mt-32">
+              <p key={p.id} id={`p-${p.id}`} data-passage={p.id} data-reveal className="psg reading relative -mx-2 mb-4 px-2 py-1 scroll-mt-32">
+                {cited?.get(p.id) ? <MarginPin refs={cited.get(p.id)!} /> : null}
                 <TermText text={p.text} names={(p.concepts ?? []).map((c) => c.name)} conceptState={conceptState} onConcept={onConcept} definitions={definitions} />
               </p>
             ))}

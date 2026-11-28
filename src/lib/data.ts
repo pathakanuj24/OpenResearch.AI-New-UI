@@ -10,9 +10,9 @@ import { toast } from "sonner";
 import { api } from "@/lib/api/client";
 import { listAnalyses, getAnalysis, deleteAnalysis } from "@/lib/api/analysis";
 import { analyzePaper } from "@/lib/api/papers";
-import { getIngestJob, getLearningMap, getPaperGraphStats, getPaperResources, reingestPaper, type IngestJob } from "@/lib/api/v2";
+import { addPaperFromWork, getIngestJob, getLearningMap, getPaperGraphStats, getPaperResources, reingestPaper, type IngestJob } from "@/lib/api/v2";
 import { memoryAPI, type PaperConcept } from "@/lib/api/memory";
-import type { ConceptState } from "@/components/atlas";
+import type { AtlasResource, ConceptState } from "@/components/atlas";
 import { track } from "@/lib/track";
 
 const log = logger("data");
@@ -160,6 +160,18 @@ export function usePaperResources(id?: string, limit = 5) {
   });
 }
 
+/**
+ * Learning resources for any topic: a concept name, or a paper title (videos and articles about that paper).
+ * Server-side search is cached for a week, so repeat lookups are cheap. Pass enabled=false to load on demand.
+ */
+export function useConceptResources(topic?: string, enabled = true) {
+  return useQuery({
+    queryKey: ["concept-resources", topic],
+    queryFn: async () => (await api.get<(AtlasResource & { score?: number })[]>("/v2/resources", { params: { concept: topic } })).data,
+    enabled: Boolean(topic) && enabled, staleTime: 10 * 60_000, retry: false,
+  });
+}
+
 // ---------------- memory / concept states ----------------
 
 export function useMemory() {
@@ -174,7 +186,9 @@ export function usePaperConcepts(id?: string) {
 export function useSetConcept(paperId?: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ name, state }: { name: string; state: ConceptState }) => memoryAPI.setConcept(name, state),
+    // quiet: the caller shows its own feedback (e.g. the learning board's stamp + undo toast).
+    mutationFn: ({ name, state, verified }: { name: string; state: ConceptState; quiet?: boolean; verified?: boolean }) =>
+      memoryAPI.setConcept(name, state, verified),
     onMutate: async ({ name, state }) => {
       const key = ["paper-concepts", paperId];
       const prev = qc.getQueryData<PaperConcept[]>(key);
@@ -185,9 +199,9 @@ export function useSetConcept(paperId?: string) {
       if (ctx?.prev) qc.setQueryData(["paper-concepts", paperId], ctx.prev);
       toast.error("Couldn't save that. Try again.");
     },
-    onSuccess: (_d, { name, state }) => {
+    onSuccess: (_d, { name, state, quiet }) => {
       track({ type: "concept_state", concept: name, paper_id: paperId, value: state });
-      if (state === "known") toast(`Stamped: ${name}`);
+      if (state === "known" && !quiet) toast(`Stamped: ${name}`);
     },
     onSettled: () => {
       for (const k of [["memory"], ["learning-map"], ["paper-concepts"], ["paper-resources"]]) qc.invalidateQueries({ queryKey: k });
@@ -296,6 +310,35 @@ export function useJobPolling() {
       refetchInterval: 2500,
     })),
   });
+}
+
+/**
+ * Add a cited/citing paper to the library from its link: the server fetches an open-access PDF and queues mapping.
+ * Tracked in the same jobs list as uploads, so progress and the "mapped" toast work the same way.
+ * Resolves to { paperId } on success, { notOpenAccess } when there's no free copy (the caller offers an upload),
+ * or {} after any other failure (already shown as a toast).
+ */
+export function useAddFromWork() {
+  const qc = useQueryClient();
+  const upsert = useJobs((s) => s.upsert);
+  return async (w: { title: string; openalex_id?: string | null; doi?: string | null }): Promise<{ paperId?: string; notOpenAccess?: boolean }> => {
+    const key = `work-${w.openalex_id ?? w.doi}-${Date.now()}`;
+    try {
+      const r = await addPaperFromWork(w);
+      upsert(key, { fileName: `${w.title}.pdf`, paperId: r.paper_id, jobId: r.job_id, status: r.job_id ? "mapping" : "done", progress: 0, stage: "Queued" });
+      if (!r.job_id) useJobs.getState().remove(key);
+      qc.invalidateQueries({ queryKey: ["analyses"] });
+      qc.invalidateQueries({ queryKey: ["library-v2"] });
+      toast.success(`Added “${w.title}”. Mapping it now; it takes about a minute.`);
+      return { paperId: r.paper_id };
+    } catch (e) {
+      const err = toApiError(e);
+      if (err.status === 404) return { notOpenAccess: true };
+      log.error("Add from link failed", err, { requestId: err.requestId, status: err.status });
+      toast.error(err.message);
+      return {};
+    }
+  };
 }
 
 export function useReingest() {

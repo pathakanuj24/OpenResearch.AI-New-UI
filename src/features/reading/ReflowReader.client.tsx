@@ -11,6 +11,8 @@ import { findBlock, reflow, type Block, type PageText } from "./reflow";
 import { TermText } from "./PassageColumn";
 import { usePdfBytes } from "./usePdf";
 import { logger } from "@/lib/log";
+import { groupRefs, type CitedRef } from "./citations";
+import { MarginPin } from "./MarginPin";
 
 const log = logger("reflow");
 
@@ -45,8 +47,8 @@ async function extract(data: Uint8Array): Promise<Block[]> {
  * headings with progress badges, concept terms by state, figures on demand, select-to-ask,
  * and citations that sweep a highlighter over the exact paragraph.
  */
-export default function ReflowReader({ paperId, target, current, conceptNames, conceptState, onConcept, definitions, onAsk }: {
-  paperId: string; target?: ReflowTarget | null; current: number; conceptNames: string[];
+export default function ReflowReader({ paperId, target, current, cited, conceptNames, conceptState, onConcept, definitions, onAsk }: {
+  paperId: string; target?: ReflowTarget | null; current: number; cited?: CitedRef[]; conceptNames: string[];
   conceptState: (n: string) => ConceptState; onConcept: (n: string, s: ConceptState) => void;
   definitions: Record<string, string | null | undefined>; onAsk: (q: string) => void;
 }) {
@@ -86,6 +88,11 @@ export default function ReflowReader({ paperId, target, current, conceptNames, c
     let i = -1;
     return (blocks ?? []).map((b) => (b.kind === "heading" && b.level === 1 ? ++i : i));
   }, [blocks]);
+  // Cited quotes → the paragraphs they came from, so those paragraphs carry a pin back to the answer.
+  const citedBlocks = useMemo(
+    () => (blocks && cited?.length ? groupRefs(cited, (r) => findBlock(blocks, r.source.quote, r.source.page)) : null),
+    [blocks, cited],
+  );
   const refsAt = useMemo(() => (blocks ?? []).findIndex((b) => b.kind === "heading" && /^(\d+\.?\s*)?(references|bibliography)\b/i.test(b.text)), [blocks]);
 
   if (pdf.error) return <p className="rounded-[14px] bg-surface-2 p-4 text-sm text-ink-2">{(pdf.error as Error).message}</p>;
@@ -112,7 +119,7 @@ export default function ReflowReader({ paperId, target, current, conceptNames, c
           const idx = sections[i];
           const state = idx < current ? "done" : idx === current ? "current" : "ahead";
           return b.level === 1 ? (
-            <h2 key={i} data-section={idx} data-page={b.page} className="mb-3 mt-10 flex scroll-mt-28 items-center gap-2.5 text-[21px] font-semibold tracking-[-0.02em]">
+            <h2 key={i} data-reveal data-section={idx} data-section-title={b.text} data-page={b.page} className="mb-3 mt-10 flex scroll-mt-28 items-center gap-2.5 text-[21px] font-semibold tracking-[-0.02em]">
               <span className={cn("grid size-6 shrink-0 place-items-center rounded-lg text-xs font-semibold",
                 state === "done" ? "bg-known-soft text-known" : state === "current" ? "bg-moss text-moss-ink" : "bg-surface-2 text-ink-3")}
                 aria-label={state === "done" ? "Read" : state === "current" ? "You are here" : "Ahead"}>
@@ -121,14 +128,14 @@ export default function ReflowReader({ paperId, target, current, conceptNames, c
               {b.text}
             </h2>
           ) : (
-            <h3 key={i} data-page={b.page} className="mb-2 mt-7 text-[17px] font-semibold tracking-[-0.01em]">
+            <h3 key={i} data-reveal data-page={b.page} className="mb-2 mt-7 text-[17px] font-semibold tracking-[-0.01em]">
               {b.num ? <span className="mr-2 text-ink-3">{b.num}</span> : null}{b.text}
             </h3>
           );
         }
         if (b.kind === "math") {
           return (
-            <button key={i} type="button" data-page={b.page} onClick={() => setPageView(b.page)}
+            <button key={i} type="button" data-reveal data-page={b.page} onClick={() => setPageView(b.page)}
               className="my-3 flex w-full items-center gap-3 rounded-[12px] border border-dashed border-line-2 px-4 py-2.5 text-left transition-colors hover:border-moss hover:bg-moss-soft/30">
               <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-ink-3">{b.text}</span>
               <span className="shrink-0 text-xs font-semibold text-moss-text">See the equation · p. {b.page}</span>
@@ -137,7 +144,7 @@ export default function ReflowReader({ paperId, target, current, conceptNames, c
         }
         if (b.kind === "caption") {
           return (
-            <figure key={i} data-page={b.page} className="my-5 flex items-start gap-3 rounded-[var(--r)] border border-line bg-surface p-3.5">
+            <figure key={i} data-reveal data-page={b.page} className="my-5 flex items-start gap-3 rounded-[var(--r)] border border-line bg-surface p-3.5">
               <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-surface-2 text-ink-2"><FileText className="size-4" /></span>
               <figcaption className="min-w-0 flex-1 text-[14px] text-ink-2"><b className="text-ink">{b.label}</b>{b.text.slice(b.label.length).replace(/^[:.]\s*/, ": ")}</figcaption>
               <button type="button" onClick={() => setPageView(b.page)} className="inline-flex shrink-0 items-center gap-1 rounded-pill border border-line px-2.5 py-1 text-xs font-semibold hover:border-line-2">
@@ -147,11 +154,13 @@ export default function ReflowReader({ paperId, target, current, conceptNames, c
           );
         }
         return (
-          <p key={i} id={`rf-${b.id}`} data-page={b.page} className="psg reading group relative -mx-2 mb-4 scroll-mt-32 px-2 py-1">
+          <p key={i} id={`rf-${b.id}`} data-reveal data-page={b.page} className="psg reading group relative -mx-2 mb-4 scroll-mt-32 px-2 py-1">
             <button type="button" onClick={() => setPageView(b.page)} aria-label={`View page ${b.page} of the PDF`}
-              className="absolute -left-12 top-1.5 hidden rounded-md px-1.5 py-0.5 font-display text-[11px] font-semibold text-ink-3 opacity-0 transition-opacity hover:bg-surface-2 hover:text-ink group-hover:opacity-100 lg:block">
+              className={cn("absolute -left-12 hidden rounded-md px-1.5 py-0.5 font-display text-[11px] font-semibold text-ink-3 opacity-0 transition-opacity hover:bg-surface-2 hover:text-ink group-hover:opacity-100 focus-visible:opacity-100 lg:block",
+                citedBlocks?.has(b.id) ? "top-9" : "top-1.5")}>
               p. {b.page}
             </button>
+            {citedBlocks?.get(b.id) ? <MarginPin refs={citedBlocks.get(b.id)!} /> : null}
             <TermText text={b.text} names={conceptNames} conceptState={conceptState} onConcept={onConcept} definitions={definitions} />
           </p>
         );

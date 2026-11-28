@@ -23,6 +23,10 @@
   --sun-soft:#FDF1C9;    /* highlighted passage wash */
   --sun-ink:#2A2003;     /* text on sun 9.9:1 */
 
+  /* Citations and brand panels have their own names in components; in Atlas they are the sun and moss. */
+  --cite:var(--sun); --cite-ink:var(--sun-ink); --cite-soft:var(--sun-soft); --cite-line:var(--sun);
+  --hero:var(--moss); --hero-ink:var(--moss-ink);
+
   /* Concept knowledge states (text on matching -soft passes AA) */
   --new:#3557C2;      --new-soft:#E7ECFA;       /* 5.4:1 */
   --learning:#9A5E00; --learning-soft:#FBEFD6;  /* 4.6:1 */
@@ -57,7 +61,7 @@
   --bg:#111512; --surface:#181D1A; --surface-2:#1F2521;
   --ink:#EDF1EC; --ink-2:#B2BDB5; --ink-3:#8E9A92; --line:#2A312C; --line-2:#36403A;   /* 16.1 / 9.5 / 6.3 */
   --moss:#7CC79F; --moss-ink:#0E1A13; --moss-soft:#1D3026; --moss-text:#8FD6AE;       /* 9.0:1 */
-  --sun:#E9BB3A; --sun-soft:#3A3115; --sun-ink:#FFF3CC;
+  --sun:#E9BB3A; --sun-soft:#3A3115; --sun-ink:#2A2003;  /* text ON sun stays dark (9:1); text on sun-soft uses --ink */
   --new:#94AEF5; --new-soft:#1F2640; --learning:#EDB75A; --learning-soft:#3A2D14; --known:#7CCB9F; --known-soft:#1A2F23;
   --shadow-1:0 1px 2px rgba(0,0,0,.4); --shadow-2:0 18px 40px -14px rgba(0,0,0,.7);
 }
@@ -65,7 +69,7 @@
   --bg:#111512; --surface:#181D1A; --surface-2:#1F2521;
   --ink:#EDF1EC; --ink-2:#B2BDB5; --ink-3:#8E9A92; --line:#2A312C; --line-2:#36403A;
   --moss:#7CC79F; --moss-ink:#0E1A13; --moss-soft:#1D3026; --moss-text:#8FD6AE;
-  --sun:#E9BB3A; --sun-soft:#3A3115; --sun-ink:#FFF3CC;
+  --sun:#E9BB3A; --sun-soft:#3A3115; --sun-ink:#2A2003;  /* text ON sun stays dark (9:1); text on sun-soft uses --ink */
   --new:#94AEF5; --new-soft:#1F2640; --learning:#EDB75A; --learning-soft:#3A2D14; --known:#7CCB9F; --known-soft:#1A2F23;
   --shadow-1:0 1px 2px rgba(0,0,0,.4); --shadow-2:0 18px 40px -14px rgba(0,0,0,.7);
 }}

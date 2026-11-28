@@ -16,9 +16,11 @@ export function HeroIllustration() {
         <p className="mt-2 font-read text-[16px] leading-relaxed text-ink-2">Because industries cluster geographically, a shock to one industry lands unevenly on places.</p>
         <p className="relative mt-2 rounded-[10px] bg-sun-soft px-2 py-1 font-read text-[16px] leading-relaxed">
           <span className="absolute -left-7 top-1.5 grid size-[22px] -rotate-45 place-items-center rounded-[50%_50%_50%_4px] bg-sun text-[11px] font-bold text-sun-ink"><span className="rotate-45">1</span></span>
-          A $1,000 increase in import exposure per worker reduces the manufacturing share of employment by about 0.6 percentage points.
+          A $1,000 increase in{" "}
+          {/* A concept term as the reader shows it: "new to me" highlighter under the words, not a floating badge. */}
+          <span className="rounded-[4px] bg-[linear-gradient(transparent_58%,var(--new-soft)_58%)] font-medium text-new">import exposure</span>
+          {" "}per worker reduces the manufacturing share of employment by about 0.6 percentage points.
         </p>
-        <span className="absolute right-4 top-14 inline-flex items-center gap-1.5 rounded-pill bg-new-soft px-2.5 py-0.5 text-xs font-semibold text-new">● Import exposure</span>
       </div>
       <div className="relative -mt-8 ml-auto w-[78%] rounded-[var(--r-lg)] border border-line bg-surface p-4 shadow-2">
         <p className="text-[12px] font-semibold text-ink-3">How big is the effect?</p>
@@ -123,7 +125,7 @@ export function Faq() {
 export function CtaBand() {
   return (
     <section className="mx-auto mt-24 max-w-[1220px] px-4 md:px-6">
-      <div className="relative overflow-hidden rounded-[28px] bg-moss px-8 py-12 text-moss-ink md:flex md:items-center md:justify-between md:px-12">
+      <div className="hero-surface relative overflow-hidden rounded-[28px] bg-moss px-8 py-12 text-moss-ink md:flex md:items-center md:justify-between md:px-12">
         <Topo seed="cta" className="absolute inset-0 size-full" stroke="var(--moss-ink)" opacity={0.16} />
         <div className="relative">
           <h2 className="text-[30px] font-semibold tracking-[-0.03em] md:text-[38px]">Your next paper will be easier than your last.</h2>

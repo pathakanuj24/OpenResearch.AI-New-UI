@@ -22,6 +22,9 @@ import { useReadProgress } from "./progress";
 import { cn } from "@/lib/utils";
 import { track } from "@/lib/track";
 import { ErrorBoundary } from "@/components/app/ErrorBoundary";
+import { citedRefs, groupRefs } from "./citations";
+import { SectionMenu, SectionRail, goToSection, useSections } from "./SectionNav";
+import { useReveal } from "./useReveal";
 
 const PdfColumn = dynamic(() => import("./PdfColumn.client"), { ssr: false });
 const ReflowReader = dynamic(() => import("./ReflowReader.client"), { ssr: false });
@@ -50,6 +53,16 @@ export function PaperScreen({ id }: { id: string }) {
   const [section, setSection] = useState(0);
   const column = useRef<HTMLDivElement>(null);
   const [isDesktop, setDesktop] = useState(true);
+  // The guide panel slides out before it unmounts (exit is quicker than entry).
+  const [shownOpen, setShownOpen] = useState(open);
+  const [closing, setClosing] = useState(false);
+  if (open !== shownOpen) { setShownOpen(open); setClosing(!open); }
+  useEffect(() => {
+    if (!closing) return;
+    const t = setTimeout(() => setClosing(false), 200);
+    return () => clearTimeout(t);
+  }, [closing]);
+  const panel = open || closing;
 
   useEffect(() => { setLast(id); track({ type: "paper_opened", paper_id: id }); }, [id, setLast]);
   // Reading milestones (25/50/75/100%) for recommendations.
@@ -113,6 +126,13 @@ export function PaperScreen({ id }: { id: string }) {
     if (!isDesktop) setOpen(false);
   }, [view, router, pathname, passages.data, isDesktop, setOpen, id]);
 
+  // Passages the conversation has cited: the reading column pins each one back to its answer.
+  const refs = useMemo(() => citedRefs(chat.messages), [chat.messages]);
+  const citedByPassage = useMemo(() => groupRefs(refs, (r) => r.source.chunk_id), [refs]);
+  const sections = useSections(column, `${view}-${readerMode}-${passages.data?.sections.length ?? 0}`);
+  const goTo = useCallback((i: number) => goToSection(column, i), []);
+  useReveal(column, `${view}-${readerMode}`);
+
   const ds = analysis.data?.analysis?.document_summary;
   const title: string = ds?.title || stats.data?.title || analysis.data?.file_name?.replace(/\.pdf$/i, "") || "Paper";
   const field = stats.data?.field ?? null;
@@ -126,28 +146,37 @@ export function PaperScreen({ id }: { id: string }) {
     <div>
       {/* Toolbar shared by Read and Trail */}
       <div className="sticky top-16 z-30 border-b border-line/60 bg-bg/90 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-3 px-4 md:px-6">
-          <Link href="/today" aria-label="Back to Today" className="grid size-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2"><ArrowLeft className="size-[18px]" /></Link>
+        <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-2 px-4 sm:gap-3 md:px-6">
+          <Link href="/today" aria-label="Back to Today" className="hidden size-9 shrink-0 place-items-center sm:grid rounded-full text-ink-2 hover:bg-surface-2"><ArrowLeft className="size-[18px]" /></Link>
           <Segmented label="View" value={view} onChange={(v) => router.push(v === "trail" ? `${pathname}?view=trail` : pathname, { scroll: false })}
-            options={[{ value: "read", label: <><BookOpen /> Read</> }, { value: "trail", label: <><Route /> Trail</> }]} />
+            options={[{ value: "read", label: <><BookOpen aria-hidden /><span className="max-sm:sr-only">Read</span></> }, { value: "trail", label: <><Route aria-hidden /><span className="max-sm:sr-only">Trail</span></> }]} />
           <p className="hidden min-w-0 flex-1 truncate font-read text-[15px] italic text-ink-2 md:block">{title}</p>
+          {view === "read" ? <SectionMenu sections={sections} current={section} onGo={goTo} className={cn("max-md:ml-auto", !open && "xl:hidden")} /> : null}
           {view === "read" && !passages.data?.sections.length ? (
             <Segmented label="Reading mode" value={readerMode} onChange={(v) => setPrefs({ readerMode: v })}
               options={[{ value: "text", label: "Text" }, { value: "pdf", label: "PDF" }]} />
           ) : null}
           <div className="ml-auto flex items-center gap-3">
             <span className="hidden items-center gap-2 text-[13px] text-ink-2 sm:flex"><ProgressRing value={progress} label="Read so far" /> {Math.round(progress * 100)}% read</span>
-            <Button size="sm" variant={open ? "pri" : "sec"} onClick={() => setOpen(!open)} aria-pressed={open}><Sparkles /> Guide</Button>
+            <Button size="sm" variant={open ? "pri" : "sec"} onClick={() => setOpen(!open)} aria-pressed={open} className="max-sm:w-[34px] max-sm:px-0"><Sparkles aria-hidden /><span className="max-sm:sr-only">Guide</span></Button>
           </div>
         </div>
       </div>
 
-      <div className={cn("mx-auto max-w-[1440px]", open && isDesktop && "grid grid-cols-[minmax(0,1fr)_440px]")}>
-        <div className="min-w-0">
+      {/* Desktop: the guide column grows from 0 to 440px, so the paper glides aside instead of jumping. */}
+      <div className={cn("mx-auto max-w-[1440px]", isDesktop && "grid transition-[grid-template-columns] duration-[var(--t-med)] ease-atlas")}
+        style={isDesktop ? { gridTemplateColumns: `minmax(0,1fr) ${open ? 440 : 0}px` } : undefined}>
+        {/* Read ↔ Trail: the incoming view rises in. */}
+        <div key={view} className="min-w-0 animate-enter">
           {view === "trail" ? (
             <TrailView paperId={id} title={title} conceptState={conceptState} onConcept={onConcept} />
           ) : (
-            <article className="mx-auto max-w-[808px] px-4 pb-40 pt-6 md:px-6">
+            <article className="relative mx-auto max-w-[808px] px-4 pb-40 pt-6 md:px-6">
+              {!open ? (
+                <div className="absolute right-full top-0 mr-10 hidden h-full w-[184px] xl:block">
+                  <div className="sticky top-[152px]"><SectionRail sections={sections} current={section} onGo={goTo} /></div>
+                </div>
+              ) : null}
               <NotMappedBanner id={id} title={title} show={stats.isFetched && stats.data === null} />
               <FieldCover field={field} seed={id} label={false} className="rounded-[var(--r)]" height={120} />
               {field ? (
@@ -176,24 +205,29 @@ export function PaperScreen({ id }: { id: string }) {
 
               <div ref={column} className="mt-4">
                 <ErrorBoundary area="the reading view" resetKeys={[id, readerMode]} className="mt-8">
+                {/* Text ↔ PDF: crossfade by remounting the column under a new key. */}
+                <div key={readerMode} className="animate-fade-in">
                 {passages.isLoading ? <div className="space-y-3 pt-8">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}</div>
                   : passages.data?.sections.length ? (
-                    <PassageColumn sections={passages.data.sections} current={section} target={passageTarget}
+                    <PassageColumn sections={passages.data.sections} current={section} target={passageTarget} cited={citedByPassage}
                       conceptState={conceptState} onConcept={onConcept} definitions={definitions} />
                   ) : readerMode === "text" ? (
-                    <ReflowReader paperId={id} target={textTarget} current={section} conceptNames={conceptNames} conceptState={conceptState}
+                    <ReflowReader paperId={id} target={textTarget} current={section} cited={refs} conceptNames={conceptNames} conceptState={conceptState}
                       onConcept={onConcept} definitions={definitions} onAsk={(q) => ask(q)} />
                   ) : (
                     <div className="pt-6"><PdfColumn paperId={id} target={pdfTarget} /></div>
                   )}
+                </div>
                 </ErrorBoundary>
               </div>
               <Extras analysis={analysis.data?.analysis} />
             </article>
           )}
         </div>
-        {open && isDesktop ? (
-          <div className="sticky top-[120px] h-[calc(100dvh-120px)] border-l border-line">{guide}</div>
+        {panel && isDesktop ? (
+          <div className="sticky top-[120px] h-[calc(100dvh-120px)] min-w-0 overflow-hidden border-l border-line">
+            <div className={cn("h-full w-[440px]", open ? "animate-panel-in" : "animate-panel-out")} inert={!open}>{guide}</div>
+          </div>
         ) : null}
       </div>
 
@@ -224,6 +258,9 @@ function AskBar({ onAsk, waiting }: { onAsk: (q: string) => void; waiting?: bool
     );
   }
   return (
+    <>
+    {/* The paper fades out beneath the ask bar instead of showing through between the chips. */}
+    <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-20 h-44 bg-gradient-to-t from-bg from-30% via-bg/80 to-transparent md:h-36" />
     <div className="pointer-events-none fixed inset-x-0 bottom-24 z-30 flex flex-col items-center gap-2 px-4 md:bottom-5">
       <div className="pointer-events-auto hidden flex-wrap justify-center gap-1.5 md:flex">
         {SUGGESTIONS.map((s) => (
@@ -239,6 +276,7 @@ function AskBar({ onAsk, waiting }: { onAsk: (q: string) => void; waiting?: bool
         <button type="submit" disabled={!q.trim()} aria-label="Ask" className="grid size-9 place-items-center rounded-full bg-moss text-moss-ink transition-opacity disabled:opacity-40"><ArrowUp className="size-4" /></button>
       </form>
     </div>
+    </>
   );
 }
 
@@ -247,7 +285,7 @@ function NotMappedBanner({ id, title, show }: { id: string; title: string; show:
   const job = useJobs((s) => s.jobs.find((j) => j.paperId === id));
   if (!show) return null;
   return (
-    <div className="mb-5 flex flex-wrap items-center gap-3 rounded-[var(--r)] border border-line bg-sun-soft px-4 py-3 text-sun-ink">
+    <div className="mb-5 flex flex-wrap items-center gap-3 rounded-[var(--r)] border border-line bg-sun-soft px-4 py-3 text-ink">
       <p className="flex-1 text-sm">
         {job ? <>Mapping this paper{job.stage ? `: ${job.stage}` : "…"} The guide and trail will work once it&apos;s done.</>
           : <>This paper isn&apos;t mapped yet, so the guide can&apos;t cite passages and there&apos;s no trail. Mapping takes about a minute.</>}

@@ -9,6 +9,7 @@ export type MemoryConcept = {
   source: "user" | "inferred";
   confidence?: number;
   updated_at?: string;
+  verified?: boolean; // passed a "Prove it" check
 };
 
 export type Memory = {
@@ -28,12 +29,23 @@ export type PaperConcept = {
   role: "prerequisite" | "core" | "contribution" | "related";
   status: ConceptStatus;
   source?: "user" | "inferred" | null;
+  verified?: boolean;
+};
+
+/** One "Prove it" question; `source` is the passage that answers it. */
+export type CheckQuestion = {
+  question: string; choices: string[]; answer: number; explanation: string;
+  source: { chunk_id: string; page: number; section: string; quote: string };
 };
 
 export const memoryAPI = {
   get: async () => (await api.get<Memory>("/v2/me/memory")).data,
   paperConcepts: async (paperId: string) => (await api.get<PaperConcept[]>(`/v2/me/papers/${paperId}/concepts`)).data,
-  setConcept: async (name: string, status: ConceptStatus) => (await api.put("/v2/me/concepts", { name, status })).data,
+  setConcept: async (name: string, status: ConceptStatus, verified = false) =>
+    (await api.put("/v2/me/concepts", { name, status, verified })).data,
+  // Written by the model on first request (response time varies), so this gets a longer limit than the 30 s default.
+  checkConcept: async (paperId: string, concept: string) =>
+    (await api.post<{ concept: string; questions: CheckQuestion[] }>("/v2/me/concepts/check", { paper_id: paperId, concept }, { timeout: 60_000 })).data,
   setPreferences: async (prefs: { field?: string; depth?: Memory["depth"]; [extra: string]: unknown }) =>
     (await api.put("/v2/me/preferences", prefs)).data,
   forgetInterest: async (name: string) => (await api.delete(`/v2/me/interests/${encodeURIComponent(name)}`)).data,

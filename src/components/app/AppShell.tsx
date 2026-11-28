@@ -132,9 +132,9 @@ function ThemeButton() {
   const { resolvedTheme, setTheme } = useTheme();
   const dark = resolvedTheme === "dark";
   return (
-    <button type="button" onClick={() => setTheme(dark ? "light" : "dark")} aria-label={dark ? "Use light theme" : "Use dark theme"}
+    <button type="button" onClick={() => setTheme(dark ? "light" : "dark")} aria-label="Switch light or dark theme"
       className="grid size-10 place-items-center rounded-full text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink">
-      {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
+      <Sun className="hidden size-[18px] dark:block" aria-hidden /><Moon className="size-[18px] dark:hidden" aria-hidden />
     </button>
   );
 }

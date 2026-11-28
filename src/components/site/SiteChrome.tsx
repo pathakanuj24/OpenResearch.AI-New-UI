@@ -27,8 +27,11 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-1.5">
+          {/* Both icons render; CSS picks one, so server and client HTML match (resolvedTheme is unknown on the server). */}
           <button type="button" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")} aria-label="Toggle theme"
-            className="grid size-10 place-items-center rounded-full text-ink-2 hover:bg-surface-2">{resolvedTheme === "dark" ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}</button>
+            className="grid size-10 place-items-center rounded-full text-ink-2 hover:bg-surface-2">
+            <Sun className="hidden size-[18px] dark:block" aria-hidden /><Moon className="size-[18px] dark:hidden" aria-hidden />
+          </button>
           {user ? <Button variant="pri" size="sm" asChild><Link href="/today">Open the app</Link></Button> : (
             <>
               <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex"><Link href="/login">Log in</Link></Button>
