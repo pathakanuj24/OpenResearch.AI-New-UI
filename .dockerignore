@@ -1,0 +1,16 @@
+node_modules
+.next
+.next-*
+out
+coverage
+.git
+.github
+.env*
+*.log
+*.tsbuildinfo
+.agents
+.claude
+skills-lock.json
+Dockerfile
+.dockerignore
+README.md
