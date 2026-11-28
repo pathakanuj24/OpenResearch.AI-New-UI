@@ -45,3 +45,8 @@ next-env.d.ts
 # Firebase emulator / CLI logs
 firebase-debug.log
 *-debug.log
+
+# Local agent skills and config
+.agents/
+.claude/
+skills-lock.json
