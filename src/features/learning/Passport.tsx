@@ -59,7 +59,7 @@ export function Passport() {
         <div className="max-w-[640px]">
           <Eyebrow>My learning</Eyebrow>
           <h1 className="mt-1 text-[36px] font-semibold leading-[1.02] tracking-[-0.035em] md:text-[46px]">What you know, across every paper.</h1>
-          <p className="mt-3 text-ink-2">The guide skips what you know and slows down on what you don&apos;t. Change any concept here and every paper, trail and recommendation follows.</p>
+          <p className="mt-3 text-ink-2">Iris skips what you know and slows down on what you don&apos;t. Change any concept here and every paper, trail and recommendation follows.</p>
         </div>
         <div className="grid grid-cols-3 gap-3">
           <Stat n={count("known")} label="known" color="text-known" />

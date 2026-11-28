@@ -177,13 +177,13 @@ function StopCard({ stop, map, conceptState, onConcept, onClose }: {
           {unlocks(map, c).length ? <p className="mt-1.5 text-[13px] text-ink-3">Unlocks {unlocks(map, c).join(", ")}</p> : null}
           <div className="mt-4 flex gap-2">
             {conceptState(c.name) !== "known" ? <Button size="sm" variant="pri" onClick={() => onConcept(c.name, "known")}><Check /> I know this</Button> : null}
-            <Button size="sm" onClick={() => ask(`Explain ${c.name} using this paper`)}><Sparkles /> Ask the guide</Button>
+            <Button size="sm" onClick={() => ask(`Explain ${c.name} using this paper`)}><Sparkles /> Ask Iris</Button>
           </div>
           <p className="mt-5 text-[13px] font-semibold text-ink-2">Resources for this stop</p>
           <div className="mt-2 grid gap-3">
             {res.isLoading ? <Skeleton className="h-28" /> : res.data?.length
               ? res.data.slice(0, 2).map((r) => <ResourceCard key={r.url} r={r} />)
-              : <p className="text-[13px] text-ink-3">No resources found. Ask the guide to explain it from the paper instead.</p>}
+              : <p className="text-[13px] text-ink-3">No resources found. Ask Iris to explain it from the paper instead.</p>}
           </div>
         </>
       ) : stop.work ? (

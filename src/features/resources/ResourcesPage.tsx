@@ -216,7 +216,7 @@ export function ResourcesPage() {
                       ) : (
                         <p className="mt-3 rounded-[var(--r)] bg-sun-soft px-4 py-3 text-sm text-ink">
                           {g.all ? "Your filters hide every resource for this concept. Clear a filter to see them." : "We couldn't find a good resource for this one."}{" "}
-                          <Link href={`/papers/${paper.id}?ask=${encodeURIComponent(`Explain ${g.concept} using this paper`)}`} className="font-semibold underline">Ask the guide to explain it from the paper</Link>.
+                          <Link href={`/papers/${paper.id}?ask=${encodeURIComponent(`Explain ${g.concept} using this paper`)}`} className="font-semibold underline">Ask Iris to explain it from the paper</Link>.
                         </p>
                       )}
                     </li>

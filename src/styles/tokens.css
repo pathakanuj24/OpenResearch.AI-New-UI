@@ -35,6 +35,7 @@
   /* Field identity: fills, covers, dots. Always paired with the field name. */
   --f-econ:#D9822B; --f-bio:#3E9B6A; --f-earth:#2F7FA8; --f-hist:#9A5BA8;
   --f-phys:#4F6BD8; --f-law:#2A8C88; --f-psy:#D2576A; --f-none:#9AA39D;
+  --f-ai:#C04A9E; --f-cs:#6A55D0; --f-eng:#5F7488; --f-math:#7E9A2E;
 
   /* Shape */
   --r-xs:6px; --r-sm:10px; --r:16px; --r-lg:20px; --r-xl:28px; --r-pill:999px;

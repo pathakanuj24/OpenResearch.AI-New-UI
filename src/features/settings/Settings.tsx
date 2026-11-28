@@ -169,7 +169,7 @@ function Learning() {
   };
   const toggleFormat = (k: ResourceKind) => set({ formats: formats.includes(k) ? formats.filter((f) => f !== k) : [...formats, k] });
   return (
-    <Section id="learning" title="Learning" sub="How the guide explains, and the pace and formats of what you're shown. Changes apply straight away.">
+    <Section id="learning" title="Learning" sub="How Iris explains, and the pace and formats of what you're shown. Changes apply straight away.">
       <p className="font-semibold">Your level</p>
       <p className="mb-2 text-[13px] text-ink-3">Sent with every question, so answers start where you are.</p>
       <div className="grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Your level">
@@ -239,11 +239,11 @@ function Privacy() {
   const tiles = [
     [`${papers?.length ?? "–"} papers`, "Your uploads, visible only to you"],
     [`${m?.concepts.length ?? "–"} concepts`, "What you know and are learning"],
-    [`${m?.episodes.length ?? "–"} session notes`, "Short summaries the guide keeps"],
+    [`${m?.episodes.length ?? "–"} session notes`, "Short summaries Iris keeps"],
     [`${m?.interests.length ?? "–"} interests`, "Used to rank your trail"],
   ];
   const clear = async () => {
-    try { await memoryAPI.forgetAll(); qc.invalidateQueries({ queryKey: ["memory"] }); toast("Guide memory cleared. Your papers stay."); }
+    try { await memoryAPI.forgetAll(); qc.invalidateQueries({ queryKey: ["memory"] }); toast("Iris's memory cleared. Your papers stay."); }
     catch { toast.error("Couldn't clear memory. Try again."); }
   };
   return (
@@ -252,7 +252,7 @@ function Privacy() {
         {tiles.map(([a, b]) => <div key={a} className="rounded-[14px] bg-surface-2 px-4 py-3"><p className="font-semibold">{a}</p><p className="text-[13px] text-ink-2">{b}</p></div>)}
       </div>
       {usage.data ? (
-        <Row title="Guide usage today" sub="A daily allowance keeps the service fair for everyone.">
+        <Row title="Iris usage today" sub="A daily allowance keeps the service fair for everyone.">
           <span className="text-sm font-semibold tabular-nums">{Math.round((100 * usage.data.tokens_today) / Math.max(1, usage.data.daily_budget))}% used</span>
         </Row>
       ) : null}
@@ -260,13 +260,13 @@ function Privacy() {
         <PersonaliseSwitch />
       </Row>
       <Interests />
-      <Row title="Clear guide memory" sub="Removes concept states, interests, session notes and your level. Papers stay.">
+      <Row title="Clear Iris's memory" sub="Removes concept states, interests, session notes and your level. Papers stay.">
         <Button size="sm" onClick={() => setConfirm(true)}>Clear memory</Button>
       </Row>
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <AlertDialogContent className="rounded-[var(--r-xl)]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Clear everything the guide remembers?</AlertDialogTitle>
+            <AlertDialogTitle>Clear everything Iris remembers?</AlertDialogTitle>
             <AlertDialogDescription>Your stamps, interests, session notes and level are deleted. Your papers and their trails stay. This can&apos;t be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -302,7 +302,7 @@ function Interests() {
             <button type="button" aria-label={`Remove interest ${i.name}`} disabled={busy === i.name} onClick={() => void forget(i.name)}
               className="grid size-7 place-items-center rounded-full text-ink-3 hover:bg-surface hover:text-ink"><X className="size-3.5" /></button>
           </span>
-        )) : <p className="text-sm text-ink-2">None yet. Ask the guide a few questions and they&apos;ll appear here.</p>}
+        )) : <p className="text-sm text-ink-2">None yet. Ask Iris a few questions and they&apos;ll appear here.</p>}
       </div>
     </div>
   );
@@ -380,7 +380,7 @@ function DeleteAccount() {
         <AlertDialogContent className="rounded-[var(--r-xl)]">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-            <AlertDialogDescription>We&apos;ll delete all {papers?.length ?? 0} papers (PDFs, analyses and trails), everything the guide remembers, then your account. Type <b>delete</b> to confirm.</AlertDialogDescription>
+            <AlertDialogDescription>We&apos;ll delete all {papers?.length ?? 0} papers (PDFs, analyses and trails), everything Iris remembers, then your account. Type <b>delete</b> to confirm.</AlertDialogDescription>
           </AlertDialogHeader>
           {err ? <FormError>{err}</FormError> : null}
           <TextField label="Type delete" value={typed} onChange={(e) => setTyped(e.target.value)} className="mb-0" />

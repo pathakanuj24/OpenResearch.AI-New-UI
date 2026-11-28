@@ -66,6 +66,10 @@
   --color-f-hist: var(--f-hist);
   --color-f-phys: var(--f-phys);
   --color-f-law: var(--f-law);
+  --color-f-ai: var(--f-ai);
+  --color-f-cs: var(--f-cs);
+  --color-f-eng: var(--f-eng);
+  --color-f-math: var(--f-math);
   --color-f-psy: var(--f-psy);
   --color-f-none: var(--f-none);
 

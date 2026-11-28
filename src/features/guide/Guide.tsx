@@ -202,11 +202,11 @@ export function Guide({ chat, onCite, conceptState, onConcept, onClose, classNam
   const first = user?.displayName?.split(" ")[0];
 
   return (
-    <aside aria-label="Guide" className={cn("flex min-h-0 flex-col bg-surface", className)}>
+    <aside aria-label="Iris" className={cn("flex min-h-0 flex-col bg-surface", className)}>
       <div className="flex items-center gap-2 border-b border-line px-4 py-3">
         <span className="size-7 rounded-full bg-[radial-gradient(circle_at_35%_35%,var(--sun),var(--moss))]" aria-hidden />
         <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-semibold leading-tight">Guide</p>
+          <p className="text-[15px] font-semibold leading-tight">Iris</p>
           <p className="truncate text-xs text-ink-3">Every answer is pinned to the paper</p>
         </div>
         {messages.length ? (
@@ -215,7 +215,7 @@ export function Guide({ chat, onCite, conceptState, onConcept, onClose, classNam
             <SquarePen className="size-[17px]" />
           </button>
         ) : null}
-        <button type="button" onClick={onClose} aria-label="Close guide" className="grid size-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2"><X className="size-[18px]" /></button>
+        <button type="button" onClick={onClose} aria-label="Close Iris" className="grid size-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2"><X className="size-[18px]" /></button>
       </div>
 
       <div ref={scroller} onScroll={(e) => { const el = e.currentTarget; stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80; }}
@@ -250,7 +250,7 @@ export function Guide({ chat, onCite, conceptState, onConcept, onClose, classNam
 
       <form className="border-t border-line p-3" onSubmit={(e) => { e.preventDefault(); send(); }}>
         <div className="flex items-end gap-2 rounded-[22px] border border-line-2 bg-bg p-1.5 pl-4 transition-shadow focus-within:border-moss focus-within:shadow-[0_0_0_5px_var(--moss-soft)]">
-          <textarea ref={area} value={input} rows={1} aria-label="Ask the guide"
+          <textarea ref={area} value={input} rows={1} aria-label="Ask Iris"
             onChange={(e) => { setInput(e.target.value); e.target.style.height = "auto"; e.target.style.height = `${Math.min(160, e.target.scrollHeight)}px`; }}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder={messages.length ? "Ask a follow-up…" : "Ask anything about this paper…"}

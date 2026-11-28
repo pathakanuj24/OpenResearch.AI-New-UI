@@ -16,7 +16,7 @@ import { track } from "@/lib/track";
 
 export const useOnboarding = create<{ open: boolean; setOpen: (o: boolean) => void }>((set) => ({ open: false, setOpen: (open) => set({ open }) }));
 
-const FIELDS: FieldKey[] = ["econ", "bio", "earth", "hist", "phys", "law", "psy"];
+const FIELDS: FieldKey[] = ["cs", "ai", "eng", "math", "phys", "bio", "earth", "econ", "psy", "law", "hist"];
 const LEVELS: { label: string; depth: NonNullable<Memory["depth"]> }[] = [
   { label: "Undergraduate", depth: "beginner" },
   { label: "Master's student", depth: "intermediate" },
@@ -112,7 +112,7 @@ export function Onboarding() {
           <>
             <p className="text-[12.5px] font-semibold text-ink-3">2 of 3</p>
             <DialogTitle className="text-[26px] font-semibold tracking-[-0.03em]">How far along are you?</DialogTitle>
-            <DialogDescription className="text-ink-2">So the guide knows which basics to skip.</DialogDescription>
+            <DialogDescription className="text-ink-2">So Iris knows which basics to skip.</DialogDescription>
             <Options items={LEVELS.map((l) => l.label)} value={level === null ? null : LEVELS[level].label} onPick={(_, i) => setLevel(i)} label="Level" />
           </>
         ) : (

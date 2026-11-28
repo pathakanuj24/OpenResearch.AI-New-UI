@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button, FieldCover, MiniTrail, Stamp, Topo } from "@/components/atlas";
 import { FIELD_LABEL, type FieldKey } from "@/lib/fields";
 
-export const FIELDS: FieldKey[] = ["econ", "bio", "earth", "hist", "phys", "law", "psy"];
+export const FIELDS: FieldKey[] = ["cs", "ai", "eng", "math", "phys", "bio", "earth", "econ", "psy", "law", "hist"];
 
 export function Highlight({ children }: { children: React.ReactNode }) {
   return <span className="bg-[linear-gradient(transparent_58%,var(--sun-soft)_58%)] [box-decoration-break:clone]">{children}</span>;
@@ -38,7 +38,7 @@ export function FieldStrip() {
   return (
     <section className="mx-auto max-w-[1220px] px-4 md:px-6">
       <p className="text-center text-[12.5px] font-semibold uppercase tracking-[.08em] text-ink-3">Built for every field, not just computer science</p>
-      <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+      <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
         {FIELDS.map((k) => (
           <div key={k} className="overflow-hidden rounded-[var(--r)] border border-line bg-surface shadow-1">
             <FieldCover field={FIELD_LABEL[k]} seed={`strip-${k}`} label={false} height={64} />
@@ -80,7 +80,7 @@ export function WhyCards() {
 
 export const STEPS = [
   ["Upload any paper", "Drop in a PDF. We find its field, split it into passages and pick out the concepts."],
-  ["Read with a guide", "Ask anything. Every answer is pinned to the passage it came from, and you see each step the guide took."],
+  ["Read with Iris", "Ask anything. Every answer is pinned to the passage it came from, and you see each step Iris took."],
   ["Follow your trail", "See what to learn first and where to go next, minus what you already know."],
 ] as const;
 
@@ -101,9 +101,9 @@ export function Steps3() {
 
 export const FAQ = [
   ["Which fields does it work for?", "Every academic field: medicine, law, history, physics, economics, the arts and computer science are all treated the same. When you upload, Insightway identifies the paper's field, subfield and type, and adapts its vocabulary to it."],
-  ["Where do the answers come from?", "Only from your paper. The guide searches its passages, and every claim carries a pin to the passage it came from. When the paper doesn't say, the guide tells you instead of guessing."],
+  ["Where do the answers come from?", "Only from your paper. Iris searches its passages, and every claim carries a pin to the passage it came from. When the paper doesn't say, Iris tells you instead of guessing."],
   ["Who can see the papers I upload?", "Only you. Your papers, trails and notes are private to your account. Shared knowledge, like what a concept means, is never linked back to you."],
-  ["Can I see and delete what it remembers about me?", "Yes. My learning shows every concept, interest and session note the guide keeps. Change or delete any of it, or erase it all from Settings."],
+  ["Can I see and delete what it remembers about me?", "Yes. My learning shows every concept, interest and session note Iris keeps. Change or delete any of it, or erase it all from Settings."],
   ["Does it work with scanned PDFs?", "Not yet. It needs a PDF with a text layer. If a paper is a scanned image, run it through OCR first or download the publisher's text version."],
 ] as const;
 
@@ -129,7 +129,7 @@ export function CtaBand() {
         <Topo seed="cta" className="absolute inset-0 size-full" stroke="var(--moss-ink)" opacity={0.16} />
         <div className="relative">
           <h2 className="text-[30px] font-semibold tracking-[-0.03em] md:text-[38px]">Your next paper will be easier than your last.</h2>
-          <p className="mt-2 opacity-90">Upload a PDF from any field and get a guide, a trail and cited answers in about a minute.</p>
+          <p className="mt-2 opacity-90">Upload a PDF from any field and get Iris, a trail and cited answers in about a minute.</p>
         </div>
         <Button variant="sun" className="relative mt-6 md:mt-0" asChild><Link href="/signup">Start reading free</Link></Button>
       </div>

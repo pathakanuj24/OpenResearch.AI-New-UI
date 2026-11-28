@@ -208,7 +208,7 @@ function SelectionMenu({ container, onAsk }: { container: React.RefObject<HTMLDi
       className="absolute z-20 flex -translate-x-1/2 -translate-y-[calc(100%+8px)] items-center gap-0.5 rounded-pill bg-ink p-1 text-bg shadow-2 animate-pop"
       style={{ left: sel.x, top: sel.y }}>
       <button type="button" onClick={() => act(`Explain this passage from the paper: "${short}"`)} className="inline-flex h-8 items-center gap-1.5 rounded-pill px-3 text-[13px] font-semibold hover:bg-bg/15">
-        <MessageCircleQuestion className="size-3.5" /> Ask the guide
+        <MessageCircleQuestion className="size-3.5" /> Ask Iris
       </button>
       <button type="button" onClick={() => act(`Explain this in simple words, like I'm new to the field: "${short}"`)} className="inline-flex h-8 items-center gap-1.5 rounded-pill px-3 text-[13px] font-semibold hover:bg-bg/15">
         <Sparkles className="size-3.5" /> Explain simply
